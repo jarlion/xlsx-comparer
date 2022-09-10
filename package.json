@@ -1,0 +1,24 @@
+{
+  "name": "xlxs-comparer",
+  "version": "1.0.0",
+  "description": "xlxs compare tool",
+  "main": "./bin/index.js",
+  "scripts": {
+    "tsc-w": "tsc -w",
+    "xc": "node ./bin/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://git.weixin.qq.com/jarlion/xlsxComparer.git"
+  },
+  "keywords": [
+    "xlsx",
+    "comparer"
+  ],
+  "author": "jarlion",
+  "license": "MIT",
+  "devDependencies": {
+    "commander": "^9.4.0"
+  }
+}
