@@ -39,7 +39,7 @@ program
 
         console.log(compare(sourceRows, targetRows, key));
 
-        new Web('static',
+        new Web('bin/static',
             8100,
             () =>
                 openUrl('http://localhost:8100/compare.html')
