@@ -44,15 +44,20 @@ export function compare<I>(a: I[], b: I[], key): CompareResult {
 
 export class CompareResult {
     duplicationProps: Set<any> = new Set();
-    protected _differentDict: Record<string, number[]> = {};
+    protected _differentDict: Record<string, { [index: number]: boolean; }> = {};
     protected _oldIndex: Set<number> = new Set();
     protected _deletedIndex: Set<number> = new Set();
 
     diff(prop: string, index: number) {
         this.duplicationProps.add(prop);
-        if (!this._differentDict[prop]) this._differentDict[prop] = [];
-        this._differentDict[prop].push(index);
+        if (!this._differentDict[prop]) this._differentDict[prop] = {};
+        this._differentDict[prop][index] = true;
     }
+    idDiff(prop: string, index: number): boolean {
+        // console.log(prop, index, this._differentDict[prop] && this._differentDict[prop][index]);
+        return this._differentDict[prop] && this._differentDict[prop][index];
+    }
+
     isNew(index: number) {
         return !this._oldIndex.has(index);
     }
