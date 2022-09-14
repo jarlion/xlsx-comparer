@@ -1,5 +1,5 @@
 import { ChildProcess, exec, spawn } from "child_process";
-import { existsSync, mkdirSync, readdirSync, rmdirSync, statSync, unlinkSync, WriteFileOptions, writeFileSync } from "fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmdirSync, statSync, unlinkSync, WriteFileOptions, writeFileSync } from "fs";
 import { dirname, resolve } from "path";
 
 /**
@@ -82,8 +82,7 @@ export function clearSync(dir: string): void {
 export function saveSync(path: string, data: string, options: WriteFileOptions = { encoding: 'utf-8' }): void {
     try {
         const filePath = resolve(process.cwd(), path);
-        const dirPath = dirname(filePath);
-        if (!existsSync(dirPath)) mkdirSync(dirPath);
+        dirSync(filePath);
         writeFileSync(filePath, data, options);
         console.log(`-> 文件保存成功！${filePath}`);
     } catch (err) {
@@ -113,3 +112,21 @@ export function openUrl(url: string): void {
             spawn('xdg-open', [url]);
     }
 };
+
+export function dirSync(path: string, create: boolean = true): string {
+    const dirPath = dirname(path);
+    if (!existsSync(dirPath)) create ? mkdirSync(dirPath) : '';// TODO
+    return dirPath;
+}
+
+export function copySync(src: string, dist: string): void {
+    try {
+        const srcFullPath = resolve(process.cwd(), src);;
+        const distFullPath = resolve(process.cwd(), dist);;
+        // writeFileSync(readFileSync(src), dist);
+        dirSync(distFullPath);
+        copyFileSync(srcFullPath, distFullPath);
+    } catch (err) {
+        console.error(err);
+    }
+}
