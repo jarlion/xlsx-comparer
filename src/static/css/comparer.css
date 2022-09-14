@@ -1,0 +1,25 @@
+table#xl {
+    border-collapse: collapse;
+    color: rgb(96, 98, 102);
+    width: 750px
+}
+
+table#xl th {
+    padding: 7px 5px;
+    border: 1px solid #cccccc;
+    background-color: #EDEDED;
+    color: #444;
+}
+
+table#xl td {
+    padding: 5px 5px;
+    border: 1px solid #ccc;
+}
+
+#xl .diff {
+    background-color: goldenrod;
+}
+
+#xl .new {
+    background-color: blueviolet;
+}
