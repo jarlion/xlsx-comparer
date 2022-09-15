@@ -17,9 +17,9 @@ table#xl td {
 }
 
 #xl .diff {
-    background-color: goldenrod;
+    background-color: #FFC7CE;
 }
 
 #xl .new {
-    background-color: blueviolet;
+    background-color: #C6EFCE;
 }
