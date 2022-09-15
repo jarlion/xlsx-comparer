@@ -49,7 +49,7 @@ export function makeTable<T extends Record<string, string>>(data: T[], eachFn: (
         tbody.push(tr(row, ind.add().toString()));
         ind.reduce();
     }
-    return table(tbody, ind.toString()).setId('xl');
+    return table(tbody, ind.toString());
 }
 
 export function createTable<T extends object>(data: T[], eachFn: (colName: string, row: number) => string, indents: string = ''): string {

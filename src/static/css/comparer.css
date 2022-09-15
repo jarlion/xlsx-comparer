@@ -1,25 +1,34 @@
-table#xl {
-    border-collapse: collapse;
-    color: rgb(96, 98, 102);
-    width: 750px
+.pane {
+    display: flex;
+    justify-content: space-around;
 }
 
-table#xl th {
+.pane>* {
+    flex-grow: 1;
+}
+
+.pane table {
+    border-collapse: collapse;
+    color: rgb(96, 98, 102);
+    width: 100%;
+}
+
+.pane table th {
     padding: 7px 5px;
     border: 1px solid #cccccc;
     background-color: #EDEDED;
     color: #444;
 }
 
-table#xl td {
+.pane table td {
     padding: 5px 5px;
     border: 1px solid #ccc;
 }
 
-#xl .diff {
+.pane .diff {
     background-color: #FFC7CE;
 }
 
-#xl .new {
+.pane .new {
     background-color: #C6EFCE;
 }

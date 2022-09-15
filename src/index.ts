@@ -2,7 +2,7 @@ import { Command } from 'commander';
 import { resolve } from 'path';
 import { Web } from './app/App';
 import { compare, isKeyDuplication } from './utils/dataUtil';
-import { createHtml, createTable, html, link, makeTable, span } from './utils/htmlUtil';
+import { createHtml, createTable, div, html, link, makeTable, span } from './utils/htmlUtil';
 import { copySync, openUrl, saveSync } from './utils/osUtil';
 import { readXlsx } from './utils/xlsxUtil';
 
@@ -38,9 +38,10 @@ program
         console.log(res);
         const htm = html('Xlsx Comparer')
             .append(link('./css/comparer.css'))
-            .append(span(createTable(sourceRows, (col, r) => res.idDiff(col, r) ? 'diff' : '')))
-            .append(span(makeTable(targetRows, (col, r) => res.idDiff(col, r) ? 'diff' : res.isNew(r) ? 'new' : '')));
-        console.log(htm);
+            .append(div().setClass('pane')
+                .append(div(createTable(sourceRows, (col, r) => res.idDiff(col, r) ? 'diff' : '')))
+                .append(div(makeTable(targetRows, (col, r) => res.idDiff(col, r) ? 'diff' : res.isNew(r) ? 'new' : ''))));
+        console.dir(htm);
         saveSync('bin/static/compare.html', htm.toString());
 
         const root = initWebDir('bin/static');
