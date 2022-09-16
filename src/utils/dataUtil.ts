@@ -17,15 +17,17 @@ export function isKeyDuplication<I>(items: I[], key: any): number {
     return -1;
 }
 
-export function compare<I>(a: I[], b: I[], key): CompareResult {
+export function compare<I extends object>(source: I[], target: I[], key: string): CompareResult {
     const result: CompareResult = new CompareResult;
-    for (let index = 0; index < a.length; index++) {
-        let sourceItem = a[index];
+    for (let index = 0; index < source.length; index++) {
+        let sourceItem = source[index];
         // for (let item of a) {
         // @ts-ignore
-        const targetItem = b.find(i => i[key] === sourceItem[key]);
-        if (targetItem) {
+        const targetItemIndex = target.findIndex(i => i[key] === sourceItem[key]);
+        if (targetItemIndex !== -1) {
             result.old(index);
+            result.link(targetItemIndex, index);
+            const targetItem = target[targetItemIndex];
             const props = Object.keys(targetItem);
             props.forEach(p => {
                 // 找到不同属性写入结果
@@ -47,24 +49,37 @@ export class CompareResult {
     protected _differentDict: Record<string, { [index: number]: boolean; }> = {};
     protected _oldIndex: Set<number> = new Set();
     protected _deletedIndex: Set<number> = new Set();
+    protected _links: Record<number, number> = {};
 
-    diff(prop: string, index: number) {
+    diff(prop: string, index: number): this {
         this.duplicationProps.add(prop);
         if (!this._differentDict[prop]) this._differentDict[prop] = {};
         this._differentDict[prop][index] = true;
+        return this;
     }
     idDiff(prop: string, index: number): boolean {
         // console.log(prop, index, this._differentDict[prop] && this._differentDict[prop][index]);
         return this._differentDict[prop] && this._differentDict[prop][index];
     }
 
-    isNew(index: number) {
+    getLink(targetIndex: number): number {
+        return this._links[targetIndex] ?? -1;
+    }
+
+    isNew(index: number): boolean {
         return !this._oldIndex.has(index);
     }
-    old(index: number) {
+    old(index: number): this {
         this._oldIndex.add(index);
+        return this;
     }
-    del(index: number) {
+    del(index: number): this {
         this._deletedIndex.add(index);
+        return this;
+    }
+
+    link(targetIndex: number, sourceIndex: number): this {
+        this._links[targetIndex] = sourceIndex;
+        return this;
     }
 }
