@@ -93,7 +93,8 @@ export class HTMLText implements IHTMLElement {
 }
 
 export function encodeHtml(value: string): string {
-    return value.replace(/"/g, '&quot;')
+    if (!value) return '';
+    return String(value).replace(/"/g, '&quot;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/×/g, '&times;')
@@ -105,7 +106,6 @@ export function encodeHtml(value: string): string {
         .replace(/ /g, '&nbsp;') // 不断行的空白格
         .replace(/ /g, '&ensp;')// 半方大的空白
         .replace(/ /g, '&ensp;');// 全方大的空白
-
 }
 
 export class HTMLBaseElement implements IHTMLElement {
@@ -117,13 +117,6 @@ export class HTMLBaseElement implements IHTMLElement {
     protected _attributes: Record<string, string> = {};
 
     constructor(public tag: string, public indents: string = '') { }
-    // getAttributes(): Record<string, string> {
-    //     return {
-    //         id: this._id,
-    //         className: this._class,
-    //         style: this._style
-    //     };
-    // }
 
     setAttribute(name: string, value: string): this {
         this._attributes[name] = encodeHtml(value);
