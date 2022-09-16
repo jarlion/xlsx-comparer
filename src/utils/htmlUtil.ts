@@ -20,75 +20,7 @@ export function html(title: string = '', lang: string = 'zh-CN'): HTML {
     return new HTML(title, lang);
 }
 
-export function makeTable<T extends Record<string, string>>(data: T[], eachFn: (colName: string, row: number) => string, indents: string = ''): HtmlContainer {
-    let tbody: IHTMLElement[] = [];
-    const ind = new Indent(indents);
 
-    const cols = Object.keys(data[0]);
-    const head: IHTMLElement[] = [th()];
-    cols.forEach(h => head.push(th(h)));
-    tbody.push(tr(head, ind.add().toString()));
-
-    ind.reduce();
-    for (let i = 1; i < data.length; i++) {
-        let row: IHTMLElement[] = [];
-
-        // 如果是不同项，添加样式
-        let prop = '';
-        const cls = eachFn && eachFn(prop, i);
-        // 添加序号
-        row.push(td(i.toString()).setClass(cls ? cls + ' index' : 'index'));
-
-        for (let j = 0; j < cols.length; j++) {
-            prop = cols[j];
-            // 如果是不同项，添加绿底
-            const cls = eachFn && eachFn(prop, i);
-            const cell = data[i][prop] ?? '';
-            row.push(td(cell).setClass(cls ? cls : ''));
-        }
-        tbody.push(tr(row, ind.add().toString()));
-        ind.reduce();
-    }
-    return table(tbody, ind.toString());
-}
-
-export function createTable<T extends object>(data: T[], eachFn: (colName: string, row: number) => string, indents: string = ''): string {
-    let table = `
-${indents}<table id="xl">
-${indents}${indents}<tr>`;
-
-    const cols = Object.keys(data[0]);
-    table += `<th></th>`; // 序号列
-    cols.forEach(h => {
-        table += `<th>${h}</th>`;
-    });
-    table += `${indents}${indents}</tr>`;
-
-    for (let i = 1; i < data.length; i++) {
-        table += `${indents}<tr>\n`;
-        let row = `${indents}<tr>\n`;
-
-        // 如果是不同项，添加绿底
-        let prop = '';
-        const cls = eachFn && eachFn(prop, i);
-        // 添加序号
-        row += `${indents}<td ${cls ? 'class="' + cls + ' index"' : 'index'}>${i}</td>`;
-
-        for (let j = 0; j < cols.length; j++) {
-            prop = cols[j];
-            // 如果是不同项，添加绿底
-            const cls = eachFn && eachFn(prop, i);
-            // @ts-ignore
-            row += `${indents}<td ${cls ? 'class="' + cls + '"' : ''}>${data[i][prop]}</td>`;
-
-        }
-        row += `${indents}</tr>\n`;
-        table += row;
-        table += `${indents}</tr>\n`;
-    }
-    table += `${indents}</table>\n`;
-    return table;
-}
 
 export function div(children: IHtmlChildren = null, indents: string = ''): HtmlContainer {
     return new HtmlContainer('div', children, indents);
@@ -160,6 +92,22 @@ export class HTMLText implements IHTMLElement {
 
 }
 
+export function encodeHtml(value: string): string {
+    return value.replace(/"/g, '&quot;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/×/g, '&times;')
+        .replace(/÷/g, '&divide;')
+        .replace(/&/g, '&amp;')
+        .replace(/©/g, '&copy;')
+        .replace(/®/g, '&reg;')
+        .replace(/®/g, '&reg;')
+        .replace(/ /g, '&nbsp;') // 不断行的空白格
+        .replace(/ /g, '&ensp;')// 半方大的空白
+        .replace(/ /g, '&ensp;');// 全方大的空白
+
+}
+
 export class HTMLBaseElement implements IHTMLElement {
 
     parent?: IHTMLElement = undefined;
@@ -178,7 +126,7 @@ export class HTMLBaseElement implements IHTMLElement {
     // }
 
     setAttribute(name: string, value: string): this {
-        this._attributes[name] = value;
+        this._attributes[name] = encodeHtml(value);
         return this;
     }
     appendAttribute(name: string, value: string): this {
