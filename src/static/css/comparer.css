@@ -20,19 +20,19 @@
     border: 1px solid #ccc;
 }
 
-.pane .index {
+.main .index {
     background-color: #DDEBF7;
 }
 
-.pane .diff {
+.main .diff {
     background-color: #FFC7CE;
 }
 
-.pane .new {
+.main .new {
     background-color: #C6EFCE;
 }
 
-.pane .del {
+.main .del {
     background-color: #CCCCCC;
 }
 
