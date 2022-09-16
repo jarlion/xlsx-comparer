@@ -8,6 +8,10 @@
     width: 100%;
 }
 
+.pane table .key {
+    font-weight: bold;
+}
+
 .pane table th {
     padding: 7px 5px;
     border: 1px solid #cccccc;

@@ -33,7 +33,7 @@ export function init(options: any) {
     // 对比表格差异
     const res = compare(sourceRows, targetRows, key);
     console.log(res);
-    const htm = makeHtml(sourceRows, targetRows, res);
+    const htm = makeHtml(sourceRows, targetRows, res, key);
     console.dir(htm);
 
     // 保存主页
@@ -61,12 +61,13 @@ function initWebDir(dir: string): string {
 
 /**
  * 创建结果回显页面
- * @param sourceRows 
- * @param targetRows 
+ * @param sourceRows 源文件行数据
+ * @param targetRows 目标文件行数据
  * @param res 
+ * @param key 表格主键
  * @returns 
  */
-function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult): HTML {
+function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult, key: string): HTML {
     return html('Xlsx Comparer')
         .append(link('./css/comparer.css'))
         .append(div().setClass('main')
@@ -78,25 +79,30 @@ function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult): HTM
                 .append(span('删除').setClass('del')))
             // 对比表格
             .append(div().setClass('pane')
-                .append(div(makeTable(sourceRows, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')))
-                .append(div(makeTable(targetRows, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : ''))))
+                .append(div(makeTable(sourceRows, key, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')))
+                .append(div(makeTable(targetRows, key, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : ''))))
         );
 }
 
 /**
  * 创建显示结果的表格
- * @param data 
+ * @param data 表格内容数据
+ * @param key 表格主键
  * @param eachFn 
  * @param indents 
  * @returns 
  */
-function makeTable<T extends Record<string, string>>(data: T[], eachFn: (colName: string, row: number) => string, indents: string = ''): HtmlContainer {
+function makeTable<T extends Record<string, string>>(data: T[], key: string, eachFn: (colName: string, row: number) => string, indents: string = ''): HtmlContainer {
     let tbody: IHTMLElement[] = [];
     const ind = new Indent(indents);
 
     const cols = Object.keys(data[0]);
     const head: IHTMLElement[] = [th()];
-    cols.forEach(h => head.push(th(h)));
+    cols.forEach(h => {
+        const tableHeader = th(h);
+        if (h === key) tableHeader.appendClass('key');
+        head.push(tableHeader);
+    });
     tbody.push(tr(head, ind.add().toString()));
 
     ind.reduce();
@@ -107,14 +113,18 @@ function makeTable<T extends Record<string, string>>(data: T[], eachFn: (colName
         let prop = '';
         const cls = eachFn && eachFn(prop, i);
         // 添加序号
-        row.push(td((i + 2).toString()).setClass(cls ? cls + ' index' : 'index'));
+        row.push(td((i + 2).toString()).setClass(`${cls ?? ''} index`));
 
         for (let j = 0; j < cols.length; j++) {
             prop = cols[j];
             // 如果是不同项，添加绿底
             const cls = eachFn && eachFn(prop, i);
             const cell = data[i][prop] ?? '';
-            row.push(td(cell).setClass(cls ? cls : '').setAttribute('title', cell, true));
+
+            row.push(td(cell)
+                .appendClass(cls ?? '')
+                .appendClass(prop === key ? 'key' : '')
+                .setAttribute('title', cell, true));
         }
         tbody.push(tr(row, ind.add().toString()));
         ind.reduce();

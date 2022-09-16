@@ -103,9 +103,10 @@ export function openUrl(url: string): void {
             break;
         // Windows使用start
         case "win32":
-            exec('start http://localhost:8100/compare.html');
-            console.log(process.env.PATH);
-            // spawn('start', ['http://localhost:8100/compare.html']).on('error', function (err) { console.error(`!!! ${err.stack}`); });
+            exec(`start ${url}`);
+            // TODO 环境变量缺少 system32/
+            // console.log(process.env.PATH);
+            // spawn('start', [url]).on('error', function (err) { console.error(`!!! ${err.stack}`); });
             break;
         // Linux等使用xdg-open
         default:

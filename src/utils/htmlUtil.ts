@@ -119,12 +119,14 @@ export class HTMLBaseElement implements IHTMLElement {
     constructor(public tag: string, public indents: string = '') { }
 
     setAttribute(name: string, value: string, encode: boolean = false): this {
-        this._attributes[name] = encode ? encodeHtml(value) : value;
+        const val = String(value).trim() ?? '';
+        this._attributes[name] = encode ? encodeHtml(val) : val;
         return this;
     }
     appendAttribute(name: string, value: string, encode: boolean = false): this {
         if (!value) return this;
-        this.setAttribute(name, `${this._attributes[name]} ${value}`, encode);
+        const currentAttribute = this._attributes[name];
+        this.setAttribute(name, `${currentAttribute ?? ''} ${value}`, encode);
         return this;
     }
 
@@ -180,8 +182,7 @@ export class HTMLBaseElement implements IHTMLElement {
 
 export class HtmlStyleElement extends HTMLBaseElement {
     setClass(value: string): this {
-        this.setAttribute('class', value);
-        return this;
+        return this.setAttribute('class', value);
     }
 
     appendClass(value: string): this {
@@ -189,11 +190,10 @@ export class HtmlStyleElement extends HTMLBaseElement {
     }
 
     setStyle(value: string): this {
-        this.setAttribute('style', value);
-        return this;
+        return this.setAttribute('style', value);
     }
     appendStyle(value: string): this {
-        return this.appendAttribute('style', value);;
+        return this.appendAttribute('style', value);
     }
 }
 
