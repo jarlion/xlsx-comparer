@@ -1,10 +1,5 @@
 .pane {
     display: flex;
-    justify-content: space-around;
-}
-
-.pane>* {
-    flex-grow: 1;
 }
 
 .pane table {
@@ -25,10 +20,27 @@
     border: 1px solid #ccc;
 }
 
+.pane .index {
+    background-color: #EEEEEE;
+}
+
 .pane .diff {
     background-color: #FFC7CE;
 }
 
 .pane .new {
     background-color: #C6EFCE;
+}
+
+.pane .del {
+    background-color: #DDDDDD;
+}
+
+td,
+th {
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    height: 25px;
+    max-width: 80px;
 }
