@@ -14,7 +14,7 @@ import { readXlsx } from './utils/xlsxUtil';
  * @param options 
  */
 export function init(options: any) {
-    const { port, key, source, target } = options;
+    const { port, key, source, target, simple, includeColumns, excludeColumns } = options;
     if (!key) throw new Error(`> !!! 请指定用于对确定行数据的字段序号，或列名 ${key}`);
     const sourcePath = resolve(process.cwd(), source);
     const targetPath = resolve(process.cwd(), target);
@@ -33,7 +33,13 @@ export function init(options: any) {
     // 对比表格差异
     const res = compare(sourceRows, targetRows, key);
     console.log(res);
-    const htm = makeHtml(sourceRows, targetRows, res, key);
+    const iColumns = (includeColumns as string).split(',');
+    iColumns.unshift(key);
+    const eColumns = (excludeColumns as string).split(',');
+    const htm = makeHtml(filterData(sourceRows, res, iColumns, eColumns),
+        filterData(targetRows, res, iColumns, eColumns),
+        res,
+        key);
     console.dir(htm);
 
     // 保存主页
@@ -82,6 +88,17 @@ function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult, key:
                 .append(div(makeTable(sourceRows, key, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')))
                 .append(div(makeTable(targetRows, key, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : ''))))
         );
+}
+
+function filterData(rows: any[], res: CompareResult, includeColumns: string[], excludeColumns: string[]): any[] {
+    const columns = new Set(includeColumns);
+    for (let col of res.duplicationProps) columns.add(col);
+    for (let ex of excludeColumns) columns.delete(ex);
+    return rows?.map(r => {
+        const item: Record<string, any> = {};
+        for (const prop of columns) item[prop] = r[prop];
+        return item;
+    });
 }
 
 /**
