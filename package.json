@@ -5,7 +5,7 @@
   "main": "./bin/index.js",
   "scripts": {
     "tsc-w": "tsc -w",
-    "xc": "node ./bin/index.js xc -s a.xlsx -t b.xlsx -k A",
+    "xc": "node ./bin/index.js xc -s test/a.xlsx -t test/b.xlsx -k A",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
