@@ -21,7 +21,7 @@
 }
 
 .pane .index {
-    background-color: #EEEEEE;
+    background-color: #DDEBF7;
 }
 
 .pane .diff {
@@ -33,7 +33,7 @@
 }
 
 .pane .del {
-    background-color: #DDDDDD;
+    background-color: #CCCCCC;
 }
 
 td,

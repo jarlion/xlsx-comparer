@@ -42,8 +42,8 @@ program
         const htm = html('Xlsx Comparer')
             .append(link('./css/comparer.css'))
             .append(div().setClass('pane')
-                .append(div(makeTable(sourceRows, (col, r) => res.idDiff(col, r) ? 'diff' : '')))
-                .append(div(makeTable(targetRows, (col, r) => res.idDiff(col, r) ? 'diff' : res.isNew(r) ? 'new' : ''))));
+                .append(div(makeTable(sourceRows, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')))
+                .append(div(makeTable(targetRows, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : ''))));
         console.dir(htm);
         saveSync('bin/static/compare.html', htm.toString());
 
@@ -90,7 +90,7 @@ function makeTable<T extends Record<string, string>>(data: T[], eachFn: (colName
             // 如果是不同项，添加绿底
             const cls = eachFn && eachFn(prop, i);
             const cell = data[i][prop] ?? '';
-            row.push(td(cell).setClass(cls ? cls : '').setAttribute('title', cell));
+            row.push(td(cell).setClass(cls ? cls : '').setAttribute('title', cell, true));
         }
         tbody.push(tr(row, ind.add().toString()));
         ind.reduce();

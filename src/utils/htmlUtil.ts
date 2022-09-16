@@ -118,13 +118,13 @@ export class HTMLBaseElement implements IHTMLElement {
 
     constructor(public tag: string, public indents: string = '') { }
 
-    setAttribute(name: string, value: string): this {
-        this._attributes[name] = encodeHtml(value);
+    setAttribute(name: string, value: string, encode: boolean = false): this {
+        this._attributes[name] = encode ? encodeHtml(value) : value;
         return this;
     }
-    appendAttribute(name: string, value: string): this {
+    appendAttribute(name: string, value: string, encode: boolean = false): this {
         if (!value) return this;
-        this._attributes[name] = `${this._attributes[name]} ${value}`;
+        this.setAttribute(name, `${this._attributes[name]} ${value}`, encode);
         return this;
     }
 
