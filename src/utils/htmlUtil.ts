@@ -79,6 +79,8 @@ export class Indent {
 export interface IHTMLElement {
     tag: string;
     parent?: IHTMLElement;
+    setAttribute(name: string, value: string, encode?: boolean): this;
+    appendAttribute(name: string, value: string, encode?: boolean): this;
     toString(): string;
 }
 
@@ -86,6 +88,13 @@ export class HTMLText implements IHTMLElement {
     tag: string = '';
     parent?: IHTMLElement | undefined;
     constructor(public text: string) { }
+    setAttribute(name: string, value: string, encode: boolean): this {
+        return this;
+    };
+    appendAttribute(name: string, value: string, encode: boolean): this {
+        return this;
+    };
+
     toString(): string {
         return this.text;
     }

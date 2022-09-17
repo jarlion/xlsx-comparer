@@ -9,6 +9,11 @@ import { compare, isKeyDuplication } from '../utils/dataUtil';
 import { copySync, openUrl, saveSync } from '../utils/osUtil';
 import { readXlsx } from '../utils/xlsxUtil';
 
+interface IInitOptions {
+    key: string;
+    head: string;
+}
+
 /**
  * 初始化程序
  * @param options 
@@ -39,7 +44,7 @@ export function init(options: any) {
     const htm = makeHtml(filterData(sourceRows, res, iColumns, eColumns),
         filterData(targetRows, res, iColumns, eColumns),
         res,
-        key);
+        options);
     console.dir(htm);
 
     // 保存主页
@@ -75,7 +80,7 @@ function initWebDir(dir: string): string {
  * @param key 表格主键
  * @returns 
  */
-function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult, key: string): HTML {
+function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult, options: IInitOptions): HTML {
     return html('Xlsx Comparer')
         .append(link('./css/comparer.css'))
         .append(div().setClass('main')
@@ -87,11 +92,19 @@ function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult, key:
                 .append(span('删除').setClass('del')))
             // 对比表格
             .append(div().setClass('pane')
-                .append(div(makeTable(sourceRows, key, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')))
-                .append(div(makeTable(targetRows, key, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : ''))))
+                .append(div(makeTable(sourceRows, options, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')))
+                .append(div(makeTable(targetRows, options, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : ''))))
         );
 }
 
+/**
+ * 过滤数据
+ * @param rows 原始的行数据
+ * @param res 比较结果
+ * @param includeColumns 包含显示的列
+ * @param excludeColumns 排除显示的列
+ * @returns 过滤后的数据
+ */
 function filterData(rows: any[], res: CompareResult, includeColumns: string[], excludeColumns: string[]): any[] {
     const columns = new Set(includeColumns);
     for (let col of res.duplicationProps) columns.add(col);
@@ -111,21 +124,37 @@ function filterData(rows: any[], res: CompareResult, includeColumns: string[], e
  * @param indents 
  * @returns 
  */
-function makeTable<T extends Record<string, string>>(data: T[], key: string, eachFn: (colName: string, row: number) => string, indents: string = ''): HtmlContainer {
+function makeTable<T extends Record<string, string>>(data: T[], options: IInitOptions, eachFn: (colName: string, row: number) => string, indents: string = ''): HtmlContainer {
+    const { key, head } = options;
+    const rowsHead = parseInt(head, 10);
     let tbody: IHTMLElement[] = [];
     const ind = new Indent(indents);
 
+    // 添加表头
     const cols = Object.keys(data[0]);
-    const head: IHTMLElement[] = [th()];
-    cols.forEach(h => {
-        const tableHeader = th(h);
-        if (h === key) tableHeader.appendClass('key');
-        head.push(tableHeader);
+    const tableHead: IHTMLElement[][] = [[th()]];
+    cols.forEach((col, colIndex) => {
+        const tableHeader = th(col);
+        if (col === key) tableHeader.appendClass('key');
+        for (let rowIndex = 0; rowIndex < rowsHead; rowIndex++) {
+            const headRowData = data[rowIndex];
+            if (!headRowData[col]) {
+                console.log(`-------`, rowIndex, colIndex, col, headRowData, tableHead[0][colIndex]);
+                tableHead[0][colIndex].setAttribute('rowspan', rowIndex.toString());
+            }
+            else {
+                if (!tableHead[rowIndex]) tableHead[rowIndex] = [];
+                tableHead[rowIndex].push(tableHeader);
+            }
+        }
     });
-    tbody.push(tr(head, ind.add().toString()));
+    tableHead.forEach(tHead =>
+        tbody.push(tr(tHead, ind.add().toString()))
+    );
 
+    // 表格内容
     ind.reduce();
-    for (let i = 0; i < data.length; i++) {
+    for (let i = rowsHead - 1; i < data.length; i++) {
         let row: IHTMLElement[] = [];
 
         // 如果是不同项，添加样式

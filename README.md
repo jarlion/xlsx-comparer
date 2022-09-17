@@ -21,13 +21,13 @@ tsc -w
 # -s (-source) 需要对比的源文件(*.xlsx)路径
 # -t (-target) 用于对比的目标文件(*.xlsx)路径
 # -k (-key) 主键名
-node ./bin/index.js xc -s test/a.xlsx -t test/b.xlsx -k A
-
-# xc 查看帮助
-node ./bin/index.js xc
+node ./bin/server/index.js xc -s test/a.xlsx -t test/b.xlsx -k A
 ```
 
 # 更新日志
+
+## 0.0.3
+- 支持多行表头
 
 ## 0.0.2
 - 显示固定列功能
