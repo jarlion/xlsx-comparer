@@ -2,6 +2,10 @@
     display: flex;
 }
 
+.pane>* {
+    flex-grow: 1;
+}
+
 .pane table {
     border-collapse: collapse;
     color: rgb(96, 98, 102);
