@@ -1,5 +1,3 @@
-import { type } from "os";
-
 
 export function isKeyDuplication<I>(items: I[], key: any): number {
     const map: Record<string, any> = {};
@@ -82,4 +80,14 @@ export class CompareResult {
         this._links[targetIndex] = sourceIndex;
         return this;
     }
+}
+
+/**
+ * 字符串转数组
+ * @param str 
+ * @returns 
+ */
+export function str2arr(str: string): string[] {
+    if (!str) return [];
+    return str.split(',').filter(s => s.trim() !== '');
 }
