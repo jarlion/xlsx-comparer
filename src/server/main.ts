@@ -1,7 +1,7 @@
 /**
  * 主程序
  */
-import { CompareResult } from '../utils/dataUtil';
+import { CompareResult, str2arr } from '../utils/dataUtil';
 import { div, html, HTML, HtmlContainer, IHTMLElement, Indent, link, span, table, td, th, tr } from '../utils/htmlUtil';
 import { resolve } from 'path';
 import { Web } from './Web';
@@ -38,9 +38,9 @@ export function init(options: any) {
     // 对比表格差异
     const res = compare(sourceRows, targetRows, key);
     console.log(res);
-    const iColumns = (includeColumns as string).split(',');
+    const iColumns = str2arr(includeColumns);
     iColumns.unshift(key);
-    const eColumns = (excludeColumns as string).split(',');
+    const eColumns = str2arr(excludeColumns);
     const htm = makeHtml(filterData(sourceRows, res, iColumns, eColumns),
         filterData(targetRows, res, iColumns, eColumns),
         res,
@@ -131,16 +131,17 @@ function makeTable<T extends Record<string, string>>(data: T[], options: IInitOp
     const ind = new Indent(indents);
 
     // 添加表头
-    const cols = Object.keys(data[0]);
-    const tableHead: IHTMLElement[][] = [[th()]];
+    let cols = Object.keys(data[0]);
+    const tableHead: IHTMLElement[][] = [[th().appendAttribute('rowspan', head)]];
     cols.forEach((col, colIndex) => {
-        const tableHeader = th(col);
-        if (col === key) tableHeader.appendClass('key');
         for (let rowIndex = 0; rowIndex < rowsHead; rowIndex++) {
             const headRowData = data[rowIndex];
-            if (!headRowData[col]) {
-                console.log(`-------`, rowIndex, colIndex, col, headRowData, tableHead[0][colIndex]);
-                tableHead[0][colIndex].setAttribute('rowspan', rowIndex.toString());
+            const cell = headRowData[col];
+            const tableHeader = th(cell).setAttribute('title', cell, true);
+            if (col === key) tableHeader.appendClass('key');
+            if (!cell) {
+                console.log(`-------`, rowIndex, colIndex, col, headRowData, tableHead[0][colIndex + 1]);
+                tableHead[0][colIndex + 1].setAttribute('rowspan', (rowIndex + 1).toString());
             }
             else {
                 if (!tableHead[rowIndex]) tableHead[rowIndex] = [];
@@ -159,14 +160,14 @@ function makeTable<T extends Record<string, string>>(data: T[], options: IInitOp
 
         // 如果是不同项，添加样式
         let prop = '';
-        const cls = eachFn && eachFn(prop, i);
+        let cls = eachFn && eachFn(prop, i);
         // 添加序号
         row.push(td((i + 2).toString()).setClass(`${cls ?? ''} index`));
 
         for (let j = 0; j < cols.length; j++) {
             prop = cols[j];
             // 如果是不同项，添加绿底
-            const cls = eachFn && eachFn(prop, i);
+            cls = eachFn && eachFn(prop, i);
             const cell = data[i][prop] ?? '';
 
             row.push(td(cell)
