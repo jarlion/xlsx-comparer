@@ -14,6 +14,7 @@
 
 .pane table .key {
     font-weight: bold;
+    max-width: 180px;
 }
 
 .pane table th {
@@ -30,6 +31,7 @@
 
 .main .index {
     background-color: #DDEBF7;
+    width: 60px;
 }
 
 .main .diff {
