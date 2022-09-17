@@ -1,16 +1,16 @@
 {
   "name": "xlxs-comparer",
-  "version": "1.0.0",
+  "version": "0.0.2",
   "description": "xlxs compare tool",
-  "main": "./bin/index.js",
+  "main": "./bin/server/index.js",
   "scripts": {
     "tsc-w": "tsc -w",
-    "xc": "node ./bin/index.js xc -s test/a.xlsx -t test/b.xlsx -k A -i B,C",
+    "xc": "node ./bin/server/index.js xc -w -s test/a.xlsx -t test/b.xlsx -k A -i B,C",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
-    "url": "https://git.weixin.qq.com/jarlion/xlsxComparer.git"
+    "url": "https://github.com/jarlion/xlsx-comparer.git"
   },
   "keywords": [
     "xlsx",

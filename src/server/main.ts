@@ -1,20 +1,20 @@
 /**
  * 主程序
  */
-import { CompareResult } from './utils/dataUtil';
-import { div, html, HTML, HtmlContainer, IHTMLElement, Indent, link, span, table, td, th, tr } from './utils/htmlUtil';
+import { CompareResult } from '../utils/dataUtil';
+import { div, html, HTML, HtmlContainer, IHTMLElement, Indent, link, span, table, td, th, tr } from '../utils/htmlUtil';
 import { resolve } from 'path';
-import { Web } from './app/App';
-import { compare, isKeyDuplication } from './utils/dataUtil';
-import { copySync, openUrl, saveSync } from './utils/osUtil';
-import { readXlsx } from './utils/xlsxUtil';
+import { Web } from './Web';
+import { compare, isKeyDuplication } from '../utils/dataUtil';
+import { copySync, openUrl, saveSync } from '../utils/osUtil';
+import { readXlsx } from '../utils/xlsxUtil';
 
 /**
  * 初始化程序
  * @param options 
  */
 export function init(options: any) {
-    const { port, key, source, target, simple, includeColumns, excludeColumns } = options;
+    const { port, key, source, target, web, includeColumns, excludeColumns } = options;
     if (!key) throw new Error(`> !!! 请指定用于对确定行数据的字段序号，或列名 ${key}`);
     const sourcePath = resolve(process.cwd(), source);
     const targetPath = resolve(process.cwd(), target);
@@ -43,17 +43,19 @@ export function init(options: any) {
     console.dir(htm);
 
     // 保存主页
-    saveSync('bin/static/main.html', htm.toString());
+    saveSync('bin/client/main.html', htm.toString());
 
     // 初始化页面资源
-    const root = initWebDir('bin/static');
+    const root = initWebDir('bin/client');
 
     // 启动 web 服务器
-    new Web(root,
-        Number(port),
-        () =>
-            openUrl(`http://localhost:${port}/main.html`)
-    );
+    if (web) {
+        new Web(root,
+            Number(port),
+            () =>
+                openUrl(`http://localhost:${port}/main.html`)
+        );
+    }
 }
 
 /**
@@ -61,7 +63,7 @@ export function init(options: any) {
  */
 function initWebDir(dir: string): string {
     //
-    copySync('src/static/css/comparer.css', `${dir}/css/comparer.css`);
+    copySync('src/client/css/comparer.css', `${dir}/css/comparer.css`);
     return dir;
 }
 
