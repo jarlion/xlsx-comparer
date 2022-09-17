@@ -10,7 +10,7 @@ export class Web {
     constructor(root: string, port = 8100, callback?: Function) {
         this.app = express()
             .use(express.static(root)).listen(port, () => {
-                console.log(`-> web on http://localhost:${8100}`);
+                console.log(`-> web on http://localhost:${port}`);
                 if (callback) callback();
             });
     }
