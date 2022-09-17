@@ -15,23 +15,23 @@
 .pane table .key {
     font-weight: bold;
     max-width: 180px;
+    color: #2F75B5;
 }
 
 .pane table th {
-    padding: 7px 5px;
     border: 1px solid #cccccc;
     background-color: #EDEDED;
     color: #444;
 }
 
 .pane table td {
-    padding: 5px 5px;
+    padding: 2px 5px;
     border: 1px solid #ccc;
 }
 
 .main .index {
     background-color: #DDEBF7;
-    width: 60px;
+    width: 50px;
 }
 
 .main .diff {
@@ -57,4 +57,5 @@ th {
 
 .file-path {
     border: #CCCCCC solid 1px;
+    padding: 2px 5px;
 }

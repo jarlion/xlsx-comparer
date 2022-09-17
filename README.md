@@ -26,6 +26,9 @@ node ./bin/server/index.js xc -s test/a.xlsx -t test/b.xlsx -k A
 
 # 更新日志
 
+## 0.0.4
+- 显示用于对比的文件名
+
 ## 0.0.3
 - 支持多行表头
 

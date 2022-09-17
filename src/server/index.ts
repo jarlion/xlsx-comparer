@@ -10,7 +10,7 @@ program
     .name('xlsx-comparer')
     .alias('xc')
     .description('xlsx 文件对比工具')
-    .version('0.0.2')
+    .version('0.0.4')
 
     .option('-p, --port <number>', '网页端口', '8100')
     .option('-s, --source <string>', '源文件 *.xlsx', ',')
