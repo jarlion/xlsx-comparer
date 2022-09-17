@@ -52,3 +52,7 @@ th {
     height: 25px;
     max-width: 80px;
 }
+
+.file-path {
+    border: #CCCCCC solid 1px;
+}

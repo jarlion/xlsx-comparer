@@ -12,6 +12,12 @@ import { readXlsx } from '../utils/xlsxUtil';
 interface IInitOptions {
     key: string;
     head: string;
+
+    /** 源文件路径 */
+    source: string;
+
+    /** 目标路径 */
+    target: string;
 }
 
 /**
@@ -92,8 +98,10 @@ function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult, opti
                 .append(span('删除').setClass('del')))
             // 对比表格
             .append(div().setClass('pane')
-                .append(div(makeTable(sourceRows, options, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')))
-                .append(div(makeTable(targetRows, options, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : ''))))
+                .append(div([div(options.source).appendClass('file-path'),
+                makeTable(sourceRows, options, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')]))
+                .append(div([div(options.target).appendClass('file-path'),
+                makeTable(targetRows, options, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : '')])))
         );
 }
 
