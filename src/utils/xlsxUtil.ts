@@ -9,7 +9,6 @@ import { readFile, Sheet2JSONOpts, utils } from 'xlsx';
  * @returns 
  */
 export function readXlsx<R extends Record<string, string>>(path: string, sheetIndex: number = 0, opts?: Sheet2JSONOpts | undefined, fix: boolean = true): R[] {
-
     const wb = readFile(path);
     const sheetName: string = wb.SheetNames[sheetIndex];
     if (!wb.Sheets[sheetName]) {
@@ -21,7 +20,7 @@ export function readXlsx<R extends Record<string, string>>(path: string, sheetIn
     // 补齐表头行
     if (rows.length > 0 && !opts && fix) {
         const head: Record<string, string> = {};
-        Object.keys(rows).forEach(prop => head[prop] = prop);
+        Object.keys(rows[0]).forEach(prop => head[prop] = prop);
         rows.unshift(head as R);
     }
     return rows;
