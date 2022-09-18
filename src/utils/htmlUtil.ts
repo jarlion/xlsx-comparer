@@ -1,18 +1,3 @@
-
-export function createHtml(body: string): string {
-    return `
-<!doctype html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <link rel="stylesheet" href="./css/comparer.css" type="text/css" />
-    </head>
-    <body>
-        ${body}
-    </body>
-</html>`;
-}
-
 export type IHtmlChildren = IHTMLElement | IHTMLElement[] | string | null;
 
 export function html(title: string = '', lang: string = 'zh-CN'): HTML {
@@ -22,25 +7,27 @@ export function html(title: string = '', lang: string = 'zh-CN'): HTML {
 
 
 
-export function div(children: IHtmlChildren = null, indents: string = ''): HtmlContainer {
-    return new HtmlContainer('div', children, indents);
+export function div(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+    return new HTMLContainer('div', indents).appendAll(children);
 }
 
-export function span(children: IHtmlChildren = null, indents: string = ''): HtmlContainer {
-    return new HtmlContainer('span', children, indents);
+export function span(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+    return new HTMLContainer('span', indents).appendAll(children);
 }
 
-export function table(children: IHtmlChildren = null, indents: string = ''): HtmlContainer {
-    return new HtmlContainer('table', children, indents);
+export function table(children: IHtmlChildren = null, indents: string = ''): HTMLTable {
+    const table = new HTMLTable(indents);
+    table.body().appendAll(children);
+    return table;
 }
-export function tr(children: IHtmlChildren = null, indents: string = ''): HtmlContainer {
-    return new HtmlContainer('tr', children, indents);
+export function tr(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+    return new HTMLContainer('tr', indents).appendAll(children);
 }
-export function th(children: IHtmlChildren = null, indents: string = ''): HtmlContainer {
-    return new HtmlContainer('th', children, indents);
+export function th(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+    return new HTMLContainer('th', indents).appendAll(children);
 }
-export function td(children: IHtmlChildren = null, indents: string = ''): HtmlContainer {
-    return new HtmlContainer('td', children, indents);
+export function td(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+    return new HTMLContainer('td', indents).appendAll(children);
 }
 
 export function img(src: string, indents: string = ''): HTMLImage {
@@ -78,15 +65,33 @@ export class Indent {
 
 export interface IHTMLElement {
     tag: string;
-    parent?: IHTMLElement;
+    parent?: IHTMLContainer;
     setAttribute(name: string, value: string, encode?: boolean): this;
     appendAttribute(name: string, value: string, encode?: boolean): this;
     toString(): string;
 }
 
+export interface IHTMLContainer extends IHTMLElement {
+
+    /**
+     * 获取指定序号的子元素
+     * @param index 
+     */
+    getChildAt(index: number): IHTMLElement | undefined;
+
+    append(child: IHTMLElement, index?: number): this;
+
+    /**
+     * 添加所有子元素到父元素
+     * @param children 
+     * @param parent 
+     */
+    appendAll(children: IHtmlChildren): this;
+}
+
 export class HTMLText implements IHTMLElement {
     tag: string = '';
-    parent?: IHTMLElement | undefined;
+    parent?: IHTMLContainer | undefined;
     constructor(public text: string) { }
     setAttribute(name: string, value: string, encode: boolean): this {
         return this;
@@ -114,12 +119,12 @@ export function encodeHtml(value: string): string {
         .replace(/®/g, '&reg;')
         .replace(/ /g, '&nbsp;') // 不断行的空白格
         .replace(/ /g, '&ensp;')// 半方大的空白
-        .replace(/ /g, '&ensp;');// 全方大的空白
+        .replace(/ /g, '&emsp;');// 全方大的空白
 }
 
 export class HTMLBaseElement implements IHTMLElement {
 
-    parent?: IHTMLElement = undefined;
+    parent?: IHTMLContainer = undefined;
 
     protected _comment: string = '';
 
@@ -207,28 +212,65 @@ export class HtmlStyleElement extends HTMLBaseElement {
 }
 
 /**
+ * 判断是否接口
+ * @param value 
+ * @returns 
+ */
+export function isIHtmlElement(value: any): boolean {
+    if (!value) return false;
+    return typeof value?.tag === 'string';
+}
+
+export function toArray(value: IHtmlChildren = null): IHTMLElement[] {
+    if (value === null || value === undefined) {
+        return [];
+    }
+    else if (Array.isArray(value)) {
+        return value;
+    }
+    else if (isIHtmlElement(value)) {
+        return [value as IHTMLElement];
+    }
+    else {
+        // string | number 
+        return [new HTMLText(value.toString())];
+    }
+}
+
+/**
  * HTML 元素模板
  */
-export class HtmlContainer extends HtmlStyleElement {
+export class HTMLContainer extends HtmlStyleElement implements IHTMLContainer {
     protected _children: IHTMLElement[] = [];
-    constructor(tag: string, child: IHtmlChildren = null, indents: string = '') {
+    constructor(tag: string, indents: string = '') {
         super(tag, indents);
-        if (typeof child === 'string') {
-            this._children.push(new HTMLText(child));
-        }
-        else if (Array.isArray(child)) {
-            this._children.push(...child);
-        }
-        else {
-            if (child !== null) this._children.push(child);
-        }
+    }
+
+    getChildAt(index: number): IHTMLElement | undefined {
+        return this._children[index];
     }
 
     append(child: IHTMLElement, index = -1): this {
         if (!child) return this;
-        child.parent = this;
+        child.parent = this as IHTMLContainer;
         let start = index >= 0 ? index : this._children.length + index + 1;
         this._children.splice(start, 0, child);
+        return this;
+    }
+
+    /**
+     * 添加所有子元素到父元素
+     * @param children 
+     * @param parent 
+     */
+    appendAll(children: IHtmlChildren): this {
+        toArray(children).forEach(c => this.append(c));
+        return this;
+    }
+
+    protected _setChild(child: IHTMLElement, index: number): this {
+        this._children[index] = child;
+        if (child) child.parent = this;
         return this;
     }
 
@@ -256,31 +298,68 @@ export class HTMLLink extends HTMLBaseElement {
     }
 }
 
-export class HTML extends HtmlContainer {
+export class HTML extends HTMLContainer {
     constructor(title: string = '', lang: string = 'zh-CN') {
-        super('html', [
-            new HtmlContainer('head')
-                .append(new HTMLMeta('', '', 'utf-8'))
-                .append(new HTMContent('title', title)),
-            new HtmlContainer('body')]);
+        super('html');
+
         this.setAttribute('lang', lang)
             .setComment('<!DOCTYPE html>');
+
+        this._setChild(new HTMLContainer('head')
+            .append(new HTMLMeta('', '', 'utf-8'))
+            .append(new HTMContent('title', title)), 0);
+        this._setChild(new HTMLContainer('body'), 1);
     }
 
-    head(): HtmlContainer {
-        return this._children[0] as HtmlContainer;
+    head(): HTMLContainer {
+        return this._children[0] as HTMLContainer;
     }
-    body(): HtmlContainer {
-        return this._children[1] as HtmlContainer;
+    body(): HTMLContainer {
+        return this._children[1] as HTMLContainer;
     }
 
     append(child: IHTMLElement, index: number = -1): this {
         if (['link', 'meta', 'title'].includes(child.tag)) {
             this.head().append(child, index);
         }
+        if (['link', 'meta', 'title'].includes(child.tag)) {
+            this.head().append(child, index);
+        }
         else {
             this.body().append(child, index);
         }
+        return this;
+    }
+}
+
+export class HTMLTable extends HTMLContainer {
+    constructor(indents: string) {
+        super('table', indents);
+        this._setChild(new HTMLContainer('thead'), 0)
+            ._setChild(new HTMLContainer('tbody'), 1);
+    }
+
+    head(): IHTMLContainer {
+        return this._children[0] as IHTMLContainer;
+    }
+    body(): IHTMLContainer {
+        return this._children[1] as IHTMLContainer;
+    }
+
+    append(child: IHTMLElement, index: number = -1): this {
+        if (['tbody'].includes(child.tag)) {
+            this._children[1] = child;
+            child.parent = this;
+        }
+        else if (['thead'].includes(child.tag)) {
+            this._children[0] = child;
+            child.parent = this;
+        }
+        return this;
+    }
+
+    appendAll(children: IHtmlChildren): this {
+        this.body().appendAll(children);
         return this;
     }
 }

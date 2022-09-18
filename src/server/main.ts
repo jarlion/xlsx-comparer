@@ -2,7 +2,7 @@
  * 主程序
  */
 import { CompareResult, str2arr } from '../utils/dataUtil';
-import { div, html, HTML, HtmlContainer, IHTMLElement, Indent, link, span, table, td, th, tr } from '../utils/htmlUtil';
+import { div, html, HTML, IHTMLContainer, IHTMLElement, Indent, link, span, table, td, th, tr } from '../utils/htmlUtil';
 import { resolve } from 'path';
 import { Web } from './Web';
 import { compare, isKeyDuplication } from '../utils/dataUtil';
@@ -34,8 +34,6 @@ export function init(options: any) {
     let index = isKeyDuplication(sourceRows, key);
     if (index !== -1) throw new Error(`> !!! ${sourcePath} 的 ${key} 列, 第 ${index} 行重复`);
     const targetRows = readXlsx<{}>(targetPath);
-    console.log(sourceRows);
-    console.log(targetRows);
 
     // 校验 key 是否重复
     index = isKeyDuplication(targetRows, key);
@@ -132,7 +130,7 @@ function filterData(rows: any[], res: CompareResult, includeColumns: string[], e
  * @param indents 
  * @returns 
  */
-function makeTable<T extends Record<string, string>>(data: T[], options: IInitOptions, eachFn: (colName: string, row: number) => string, indents: string = ''): HtmlContainer {
+function makeTable<T extends Record<string, string>>(data: T[], options: IInitOptions, eachFn: (colName: string, row: number) => string, indents: string = ''): IHTMLContainer {
     const { key, head } = options;
     const rowsHead = parseInt(head, 10);
     let tbody: IHTMLElement[] = [];
@@ -140,7 +138,7 @@ function makeTable<T extends Record<string, string>>(data: T[], options: IInitOp
 
     // 添加表头
     let cols = Object.keys(data[0]);
-    const tableHead: IHTMLElement[][] = [[th().appendAttribute('rowspan', head)]];
+    const tableHeadRows: IHTMLContainer[] = [tr().append(th().appendAttribute('rowspan', head))];
     cols.forEach((col, colIndex) => {
         for (let rowIndex = 0; rowIndex < rowsHead; rowIndex++) {
             const headRowData = data[rowIndex];
@@ -148,18 +146,15 @@ function makeTable<T extends Record<string, string>>(data: T[], options: IInitOp
             const tableHeader = th(cell).setAttribute('title', cell, true);
             if (col === key) tableHeader.appendClass('key');
             if (!cell) {
-                console.log(`-------`, rowIndex, colIndex, col, headRowData, tableHead[0][colIndex + 1]);
-                tableHead[0][colIndex + 1].setAttribute('rowspan', (rowIndex + 1).toString());
+                // console.log(`-------`, rowIndex, colIndex, col, headRowData, tableHeadRows[0].getChildAt(colIndex + 1));
+                tableHeadRows[0].getChildAt(colIndex + 1)?.setAttribute('rowspan', (rowIndex + 1).toString());
             }
             else {
-                if (!tableHead[rowIndex]) tableHead[rowIndex] = [];
-                tableHead[rowIndex].push(tableHeader);
+                if (!tableHeadRows[rowIndex]) tableHeadRows[rowIndex] = tr();
+                tableHeadRows[rowIndex].append(tableHeader);
             }
         }
     });
-    tableHead.forEach(tHead =>
-        tbody.push(tr(tHead, ind.add().toString()))
-    );
 
     // 表格内容
     ind.reduce();
@@ -186,5 +181,10 @@ function makeTable<T extends Record<string, string>>(data: T[], options: IInitOp
         tbody.push(tr(row, ind.add().toString()));
         ind.reduce();
     }
-    return table(tbody, ind.toString());
+    console.log('table', table(tbody, ind.toString())
+        .head()
+        .appendAll(tableHeadRows).parent);
+    return table(tbody, ind.toString())
+        .head()
+        .appendAll(tableHeadRows).parent as IHTMLContainer;
 }
