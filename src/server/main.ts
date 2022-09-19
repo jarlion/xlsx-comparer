@@ -18,37 +18,59 @@ interface IInitOptions {
 
     /** 目标路径 */
     target: string;
+
+    /** 需要显示的列，多个用 , 连接 */
+    includeColumns: string;
+    /** 需要排除的列，多个用 , 连接 */
+    excludeColumns: string;
+
+    /** 是否启动 web 服务器 */
+    web: boolean;
+    /** 如果启动 web 把服务器，web 服务器端口号 */
+    port?: string;
 }
 
 /**
  * 初始化程序
  * @param options 
  */
-export function init(options: any) {
+export function init(options: IInitOptions) {
     const { port, key, source, target, web, includeColumns, excludeColumns } = options;
     if (!key) throw new Error(`> !!! 请指定用于对确定行数据的字段序号，或列名 ${key}`);
     const sourcePath = resolve(process.cwd(), source);
     const targetPath = resolve(process.cwd(), target);
-    const sourceRows = readXlsx<{}>(sourcePath);
+    const sourceData = readXlsx<{}>(sourcePath);
     // 校验 key 是否重复
-    let index = isKeyDuplication(sourceRows, key);
+    let index = isKeyDuplication(sourceData, key);
     if (index !== -1) throw new Error(`> !!! ${sourcePath} 的 ${key} 列, 第 ${index} 行重复`);
-    const targetRows = readXlsx<{}>(targetPath);
+    const targetData = readXlsx<{}>(targetPath);
 
     // 校验 key 是否重复
-    index = isKeyDuplication(targetRows, key);
+    index = isKeyDuplication(targetData, key);
     if (index !== -1) throw new Error(`> !!! ${targetPath} 的 ${key} 列, 第 ${index} 行重复`);
 
-    // 对比表格差异
-    const res = compare(sourceRows, targetRows, key);
-    console.log(res);
     const iColumns = str2arr(includeColumns);
     iColumns.unshift(key);
     const eColumns = str2arr(excludeColumns);
-    const htm = makeHtml(filterData(sourceRows, res, iColumns, eColumns),
-        filterData(targetRows, res, iColumns, eColumns),
+
+    const sourceRows = filterData(sourceData, iColumns, eColumns);
+    const targetRows = filterData(targetData, iColumns, eColumns);
+    iColumns.unshift('$rank');
+    // 对比表格差异
+    const res = compare(sourceRows, targetRows, key);
+
+    // 去除相同的行及列
+
+    console.log(res);
+    const htm = makeHtml(sourceRows,
+        targetRows,
+        iColumns, // TODO
         res,
         options);
+    // const htm = makeHtml(sourceRows.filter(r => !res.same.has(r[key])),
+    //     targetRows.filter(r => !res.same.has(r[key])),
+    //     res,
+    //     options);
     console.dir(htm);
 
     // 保存主页
@@ -84,7 +106,7 @@ function initWebDir(dir: string): string {
  * @param key 表格主键
  * @returns 
  */
-function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult, options: IInitOptions): HTML {
+function makeHtml(sourceRows: any[], targetRows: any[], displayColumns: string[], res: CompareResult, options: IInitOptions): HTML {
     return html('Xlsx Comparer')
         .append(link('./css/comparer.css'))
         .append(div().setClass('main')
@@ -97,27 +119,27 @@ function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult, opti
             // 对比表格
             .append(div().setClass('pane')
                 .append(div([div(options.source).appendClass('file-path'),
-                makeTable(sourceRows, options, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')]))
+                makeTable(sourceRows, displayColumns, options, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')]))
                 .append(div([div(options.target).appendClass('file-path'),
-                makeTable(targetRows, options, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : '')])))
+                makeTable(targetRows, displayColumns, options, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : '')])))
         );
 }
 
 /**
  * 过滤数据
  * @param rows 原始的行数据
- * @param res 比较结果
  * @param includeColumns 包含显示的列
  * @param excludeColumns 排除显示的列
  * @returns 过滤后的数据
  */
-function filterData(rows: any[], res: CompareResult, includeColumns: string[], excludeColumns: string[]): any[] {
+function filterData(rows: any[], includeColumns: string[], excludeColumns: string[]): any[] {
     const columns = new Set(includeColumns);
-    for (let col of res.duplicationProps) columns.add(col);
     for (let ex of excludeColumns) columns.delete(ex);
-    return rows?.map(r => {
+    return rows?.map((r, index) => {
         const item: Record<string, any> = {};
+        // 过滤数据之后会序号会乱，先存下来
         for (const prop of columns) item[prop] = r[prop];
+        item.$rank = index + 1;
         return item;
     });
 }
@@ -130,27 +152,27 @@ function filterData(rows: any[], res: CompareResult, includeColumns: string[], e
  * @param indents 
  * @returns 
  */
-function makeTable<T extends Record<string, string>>(data: T[], options: IInitOptions, eachFn: (colName: string, row: number) => string, indents: string = ''): IHTMLContainer {
+function makeTable<T extends Record<string, string>>(data: T[], cols: string[], options: IInitOptions, eachFn: (colName: string, row: number) => string, indents: string = ''): IHTMLContainer {
     const { key, head } = options;
     const rowsHead = parseInt(head, 10);
     let tbody: IHTMLElement[] = [];
     const ind = new Indent(indents);
 
     // 添加表头
-    let cols = Object.keys(data[0]);
-    const tableHeadRows: IHTMLContainer[] = [tr().append(th().appendAttribute('rowspan', head))];
+    // let cols = Object.keys(data[0]);
+    const tableHeadRows: IHTMLContainer[] = [];
     cols.forEach((col, colIndex) => {
         for (let rowIndex = 0; rowIndex < rowsHead; rowIndex++) {
             const headRowData = data[rowIndex];
             const cell = headRowData[col];
             const tableHeader = th(cell).setAttribute('title', cell, true);
             if (col === key) tableHeader.appendClass('key');
-            if (!cell) {
-                // console.log(`-------`, rowIndex, colIndex, col, headRowData, tableHeadRows[0].getChildAt(colIndex + 1));
-                tableHeadRows[0].getChildAt(colIndex + 1)?.setAttribute('rowspan', (rowIndex + 1).toString());
+            if (!tableHeadRows[rowIndex]) tableHeadRows[rowIndex] = tr();
+            if (cell === undefined || cell === '' || cell === null) {
+                // console.log(`-------`, rowIndex, colIndex, col, headRowData, tableHeadRows[0].getChildAt(colIndex));
+                tableHeadRows[0].getChildAt(colIndex)?.setAttribute('rowspan', (rowIndex + 1).toString());
             }
             else {
-                if (!tableHeadRows[rowIndex]) tableHeadRows[rowIndex] = tr();
                 tableHeadRows[rowIndex].append(tableHeader);
             }
         }
@@ -165,9 +187,9 @@ function makeTable<T extends Record<string, string>>(data: T[], options: IInitOp
         let prop = '';
         let cls = eachFn && eachFn(prop, i);
         // 添加序号
-        row.push(td((i + 2).toString()).setClass(`${cls ?? ''} index`));
+        row.push(td((data[i].$rank + 1).toString()).setClass(`${cls ?? ''} rank`));
 
-        for (let j = 0; j < cols.length; j++) {
+        for (let j = 1; j < cols.length; j++) {
             prop = cols[j];
             // 如果是不同项，添加绿底
             cls = eachFn && eachFn(prop, i);
@@ -181,9 +203,6 @@ function makeTable<T extends Record<string, string>>(data: T[], options: IInitOp
         tbody.push(tr(row, ind.add().toString()));
         ind.reduce();
     }
-    console.log('table', table(tbody, ind.toString())
-        .head()
-        .appendAll(tableHeadRows).parent);
     return table(tbody, ind.toString())
         .head()
         .appendAll(tableHeadRows).parent as IHTMLContainer;

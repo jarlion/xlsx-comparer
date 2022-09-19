@@ -19,19 +19,20 @@
 }
 
 .pane table th {
-    border: 1px solid #cccccc;
+    border: 1px solid #BBBBBB;
     background-color: #EDEDED;
     color: #444;
 }
 
 .pane table td {
     padding: 2px 5px;
-    border: 1px solid #ccc;
+    border: 1px solid #BBBBBB;
 }
 
-.main .index {
-    background-color: #DDEBF7;
-    width: 50px;
+.main .rank {
+    background-color: #EDEDED;
+    width: 40px;
+    text-align: center;
 }
 
 .main .diff {
@@ -43,7 +44,7 @@
 }
 
 .main .del {
-    background-color: #CCCCCC;
+    background-color: #DDDDDD;
 }
 
 td,
@@ -56,7 +57,7 @@ th {
 }
 
 .file-path {
-    border: #CCCCCC solid 1px;
+    border: #BBBBBB solid 1px;
     padding: 2px 5px;
     margin: 2px 1px;
 }

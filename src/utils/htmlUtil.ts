@@ -322,9 +322,6 @@ export class HTML extends HTMLContainer {
         if (['link', 'meta', 'title'].includes(child.tag)) {
             this.head().append(child, index);
         }
-        if (['link', 'meta', 'title'].includes(child.tag)) {
-            this.head().append(child, index);
-        }
         else {
             this.body().append(child, index);
         }

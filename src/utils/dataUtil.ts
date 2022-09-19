@@ -15,25 +15,28 @@ export function isKeyDuplication<I>(items: I[], key: any): number {
     return -1;
 }
 
-export function compare<I extends object>(source: I[], target: I[], key: string): CompareResult {
+export function compare<I extends Record<string, any>>(source: I[], target: I[], key: string): CompareResult {
     const result: CompareResult = new CompareResult;
     for (let index = 0; index < source.length; index++) {
         let sourceItem = source[index];
-        // for (let item of a) {
-        // @ts-ignore
-        const targetItemIndex = target.findIndex(i => i[key] === sourceItem[key]);
+        const mainKey = sourceItem[key];
+        const targetItemIndex = target.findIndex((i: Record<string, any>) => i[key] === mainKey);
         if (targetItemIndex !== -1) {
             result.old(index);
             result.link(targetItemIndex, index);
             const targetItem = target[targetItemIndex];
             const props = Object.keys(targetItem);
+            // 是否相同的行
+            let same = true;
             props.forEach(p => {
                 // 找到不同属性写入结果
                 // @ts-ignore
                 if (sourceItem[p] !== targetItem[p]) {
                     result.diff(p, index);
+                    same = false;
                 }
             });
+            if (same) result.same.add(mainKey);
         }
         else {
             result.del(index);
@@ -44,6 +47,8 @@ export function compare<I extends object>(source: I[], target: I[], key: string)
 
 export class CompareResult {
     duplicationProps: Set<any> = new Set();
+    /** 相同的数据[主键] */
+    same: Set<string> = new Set();
     protected _differentDict: Record<string, { [index: number]: boolean; }> = {};
     protected _oldIndex: Set<number> = new Set();
     protected _deletedIndex: Set<number> = new Set();
