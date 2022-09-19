@@ -47,6 +47,15 @@
     background-color: #DDDDDD;
 }
 
+.main .status-button {
+    cursor: default;
+    width: 32px;
+    height: 32px;
+    /* border: #333333 solid 1px; */
+    background-color: #333333;
+    color: #FFFFFF;
+}
+
 td,
 th {
     text-overflow: ellipsis;

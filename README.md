@@ -26,6 +26,9 @@ node ./bin/server/index.js xc -s test/a.xlsx -t test/b.xlsx -k A
 
 # 更新日志
 
+## 0.0.7
+- 页头添加标题及当前脚本初始化状态显示
+
 ## 0.0.6
 - 不变的数据不显示
 

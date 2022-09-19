@@ -111,6 +111,9 @@ function makeHtml(sourceRows: any[], targetRows: any[], displayColumns: string[]
         .append(div().setClass('main')
             // 图例说明
             .append(div().setClass('intro')
+                .append(span('Xlsx Comparer').setClass('app-name'))
+                .append(span(' v0.0.7 ').setClass('app-ver'))
+                .append(makeStatusBox(options))
                 .append(span('相同'))
                 .append(span('新增').setClass('new'))
                 .append(span('不同').setClass('diff'))
@@ -206,4 +209,20 @@ function makeTable<T extends Record<string, string | number>>(data: T[], cols: s
     return table(tbody, ind.toString())
         .head()
         .appendAll(tableHeadRows).parent as IHTMLContainer;
+}
+
+/**
+ * 创建状态盒子
+ * @param options 
+ * @returns 
+ */
+function makeStatusBox(options: IInitOptions): IHTMLElement {
+    const children: IHTMLElement[] = [];
+    if (options.key) children.push(span('主').setAttribute('title', `(-k)主键:${options.key}`).setClass('status-button'));
+    if (options.key) children.push(span('头').setAttribute('title', `(-h)表头行数:${options.head}`).setClass('status-button'));
+    if (options.filter) children.push(span('滤').setAttribute('title', '(-f)过滤模式：相同的行被隐藏').setClass('status-button'));
+    if (options.includeColumns) children.push(span('含').setAttribute('title', `(-i)包含这些列:${options.includeColumns}`).setClass('status-button'));
+    if (options.excludeColumns) children.push(span('除').setAttribute('title', `(-e)除了这些列:${options.excludeColumns}`).setClass('status-button'));
+    return span(children)
+        .setClass('status-box');
 }
