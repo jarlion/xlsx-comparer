@@ -35,7 +35,7 @@ interface IInitOptions {
  * @param options 
  */
 export function init(options: IInitOptions) {
-    const { port, key, source, target, web, includeColumns, excludeColumns } = options;
+    const { port, key, source, target, web, includeColumns, excludeColumns, head, filter } = options;
     if (!key) throw new Error(`> !!! 请指定用于对确定行数据的字段序号，或列名 ${key}`);
     const sourcePath = resolve(process.cwd(), source);
     const targetPath = resolve(process.cwd(), target);
@@ -55,23 +55,19 @@ export function init(options: IInitOptions) {
 
     const sourceRows = filterData(sourceData, iColumns, eColumns);
     const targetRows = filterData(targetData, iColumns, eColumns);
-    iColumns.unshift('$rank');
     // 对比表格差异
-    const res = compare(sourceRows, targetRows, key);
+    const res = compare(sourceRows, targetRows, key, parseInt(head, 10), iColumns);
+    iColumns.unshift('$rank'); // 比较后再加入序号，防止序号加入判断
 
     // 去除相同的行及列
 
     console.log(res);
-    const htm = makeHtml(sourceRows,
-        targetRows,
-        iColumns, // TODO
+    const htm = makeHtml(filter ? sourceRows.filter(res.isSame(key)) : sourceRows,
+        filter ? targetRows.filter(res.isSame(key)) : targetRows,
+        iColumns,
         res,
         options);
-    // const htm = makeHtml(sourceRows.filter(r => !res.same.has(r[key])),
-    //     targetRows.filter(r => !res.same.has(r[key])),
-    //     res,
-    //     options);
-    console.dir(htm);
+    // console.dir(htm);
 
     // 保存主页
     saveSync('bin/client/main.html', htm.toString());
@@ -152,22 +148,22 @@ function filterData(rows: any[], includeColumns: string[], excludeColumns: strin
  * @param indents 
  * @returns 
  */
-function makeTable<T extends Record<string, string>>(data: T[], cols: string[], options: IInitOptions, eachFn: (colName: string, row: number) => string, indents: string = ''): IHTMLContainer {
+function makeTable<T extends Record<string, string | number>>(data: T[], cols: string[], options: IInitOptions, eachFn: (colName: string, row: number) => string, indents: string = ''): IHTMLContainer {
     const { key, head } = options;
     const rowsHead = parseInt(head, 10);
     let tbody: IHTMLElement[] = [];
     const ind = new Indent(indents);
 
     // 添加表头
-    // let cols = Object.keys(data[0]);
     const tableHeadRows: IHTMLContainer[] = [];
     cols.forEach((col, colIndex) => {
         for (let rowIndex = 0; rowIndex < rowsHead; rowIndex++) {
             const headRowData = data[rowIndex];
             const cell = headRowData[col];
-            const tableHeader = th(cell).setAttribute('title', cell, true);
+            const tableHeader = th(cell.toString()).setAttribute('title', cell.toString(), true);
             if (col === key) tableHeader.appendClass('key');
             if (!tableHeadRows[rowIndex]) tableHeadRows[rowIndex] = tr();
+            // 判断是否合并行 TODO
             if (cell === undefined || cell === '' || cell === null) {
                 // console.log(`-------`, rowIndex, colIndex, col, headRowData, tableHeadRows[0].getChildAt(colIndex));
                 tableHeadRows[0].getChildAt(colIndex)?.setAttribute('rowspan', (rowIndex + 1).toString());
@@ -180,25 +176,26 @@ function makeTable<T extends Record<string, string>>(data: T[], cols: string[], 
 
     // 表格内容
     ind.reduce();
-    for (let i = rowsHead - 1; i < data.length; i++) {
+    for (let i = rowsHead; i < data.length; i++) {
         let row: IHTMLElement[] = [];
+        const rank: number = data[i].$rank as number;
 
         // 如果是不同项，添加样式
         let prop = '';
-        let cls = eachFn && eachFn(prop, i);
+        let cls = eachFn && eachFn(prop, rank - 1);
         // 添加序号
-        row.push(td((data[i].$rank + 1).toString()).setClass(`${cls ?? ''} rank`));
+        row.push(td((rank).toString()).setClass(`${cls ?? ''} rank`));
 
         for (let j = 1; j < cols.length; j++) {
             prop = cols[j];
             // 如果是不同项，添加绿底
-            cls = eachFn && eachFn(prop, i);
+            cls = eachFn && eachFn(prop, rank - 1);
             const cell = data[i][prop] ?? '';
 
-            row.push(td(cell)
+            row.push(td(cell.toString())
                 .appendClass(cls ?? '')
                 .appendClass(prop === key ? 'key' : '')
-                .setAttribute('title', cell, true));
+                .setAttribute('title', cell.toString(), true));
         }
         tbody.push(tr(row, ind.add().toString()));
         ind.reduce();

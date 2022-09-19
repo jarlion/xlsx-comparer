@@ -15,9 +15,9 @@ export function isKeyDuplication<I>(items: I[], key: any): number {
     return -1;
 }
 
-export function compare<I extends Record<string, any>>(source: I[], target: I[], key: string): CompareResult {
+export function compare<I extends Record<string, any>>(source: I[], target: I[], key: string, startIndex: number = 0, props?: string[]): CompareResult {
     const result: CompareResult = new CompareResult;
-    for (let index = 0; index < source.length; index++) {
+    for (let index = startIndex; index < source.length; index++) {
         let sourceItem = source[index];
         const mainKey = sourceItem[key];
         const targetItemIndex = target.findIndex((i: Record<string, any>) => i[key] === mainKey);
@@ -25,7 +25,7 @@ export function compare<I extends Record<string, any>>(source: I[], target: I[],
             result.old(index);
             result.link(targetItemIndex, index);
             const targetItem = target[targetItemIndex];
-            const props = Object.keys(targetItem);
+            props = props ?? Object.keys(targetItem);
             // 是否相同的行
             let same = true;
             props.forEach(p => {
@@ -64,6 +64,9 @@ export class CompareResult {
         // console.log(prop, index, this._differentDict[prop] && this._differentDict[prop][index]);
         return this._differentDict[prop] && this._differentDict[prop][index];
     }
+
+    isSame = (key: string) => (item: { [a: string]: string; }): boolean =>
+        !this.same.has(item[key]);
 
     getLink(targetIndex: number): number {
         return this._links[targetIndex] ?? -1;
