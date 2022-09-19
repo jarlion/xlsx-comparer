@@ -28,6 +28,9 @@ interface IInitOptions {
     web: boolean;
     /** 如果启动 web 把服务器，web 服务器端口号 */
     port?: string;
+
+    /** 是否过滤模式 */
+    filter: boolean;
 }
 
 /**
