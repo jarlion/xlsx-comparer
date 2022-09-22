@@ -23,7 +23,7 @@ export function init(params: any) {
     // 校验 key 是否重复
     options.validate(targetData, targetPath);
 
-    const displayColumns = options.getDisplayColumns(sourceData[0]);
+    options.initDisplayColumns(sourceData[0]);
     const sourceRows = options.pickProps(sourceData);
     const targetRows = options.pickProps(targetData);
     // 对比表格差异
@@ -31,9 +31,8 @@ export function init(params: any) {
 
     // 去除相同的行及列
     console.log(res);
-    const htm = makeHtml(filter ? sourceRows.filter(res.isSame(key)) : sourceRows,
-        filter ? targetRows.filter(res.isSame(key)) : targetRows,
-        displayColumns,
+    const htm = makeHtml(options.filterAndPick(sourceRows, res),
+        options.filterAndPick(targetRows, res),
         res,
         options);
     // console.dir(htm);
@@ -71,14 +70,14 @@ function initWebDir(dir: string): string {
  * @param key 表格主键
  * @returns 
  */
-function makeHtml(sourceRows: any[], targetRows: any[], displayColumns: string[], res: CompareResult, options: InitOptions): HTML {
+function makeHtml(sourceRows: any[], targetRows: any[], res: CompareResult, options: InitOptions): HTML {
     return html('Xlsx Comparer')
         .append(link('./css/comparer.css'))
         .append(div().setClass('main')
             // 图例说明
             .append(div().setClass('intro')
                 .append(span('Xlsx Comparer').setClass('app-name'))
-                .append(span(' v0.0.7 ').setClass('app-ver'))
+                .append(span(options.version).setClass('app-ver'))
                 .append(makeStatusBox(options))
                 .append(span('相同'))
                 .append(span('新增').setClass('new'))
@@ -87,22 +86,24 @@ function makeHtml(sourceRows: any[], targetRows: any[], displayColumns: string[]
             // 对比表格
             .append(div().setClass('pane')
                 .append(div([div(options.sourcePath).appendClass('file-path'),
-                makeTable(sourceRows, displayColumns, options, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')]))
+                makeTable(sourceRows, options, (col, r) => res.isNew(r) ? 'del' : res.idDiff(col, r) ? 'diff' : '')]))
                 .append(div([div(options.targetPath).appendClass('file-path'),
-                makeTable(targetRows, displayColumns, options, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : '')])))
+                makeTable(targetRows, options, (col, r) => res.getLink(r) === -1 ? 'new' : res.idDiff(col, res.getLink(r)) ? 'diff' : '')])))
         );
 }
 
+type ColumnValue = string | ((row: any) => string);
 
 /**
  * 创建显示结果的表格
  * @param data 表格内容数据
  * @param key 表格主键
- * @param eachFn 
+ * @param options 配置
+ * @param eachFn 每列数据的样式
  * @param indents 
  * @returns 
  */
-function makeTable<T extends Record<string, string | number>>(data: T[], cols: string[], options: InitOptions, eachFn: (colName: string, row: number) => string, indents: string = ''): IHTMLContainer {
+function makeTable<T extends Record<string, string | number>>(data: T[], options: InitOptions, eachFn: (colName: string, row: number) => string, indents: string = ''): IHTMLContainer {
     const { key, head } = options;
     const rowsHead = head;
     let tbody: IHTMLElement[] = [];
@@ -110,6 +111,7 @@ function makeTable<T extends Record<string, string | number>>(data: T[], cols: s
 
     // 添加表头
     const tableHeadRows: IHTMLContainer[] = [];
+    const cols = options.displayColumns;
     cols.forEach((col, colIndex) => {
         for (let rowIndex = 0; rowIndex < rowsHead; rowIndex++) {
             const headRowData = data[rowIndex];
@@ -142,7 +144,7 @@ function makeTable<T extends Record<string, string | number>>(data: T[], cols: s
 
         for (let j = 1; j < cols.length; j++) {
             prop = cols[j];
-            // 如果是不同项，添加绿底
+            // 获取指定单元格样式
             cls = eachFn && eachFn(prop, rank - 1);
             const cell = data[i][prop] ?? '';
 
@@ -169,8 +171,10 @@ function makeStatusBox(options: InitOptions): IHTMLElement {
     if (options.key) children.push(span('主').setAttribute('title', `(-k)主键:${options.key}`).setClass('status-button'));
     if (options.key) children.push(span('头').setAttribute('title', `(-h)表头行数:${options.head}`).setClass('status-button'));
     if (options.filter) children.push(span('滤').setAttribute('title', '(-f)过滤模式：相同的行被隐藏').setClass('status-button'));
-    if (options.includeColumns) children.push(span('含').setAttribute('title', `(-i)包含这些列:${options.includeColumns}`).setClass('status-button'));
-    if (options.excludeColumns) children.push(span('除').setAttribute('title', `(-e)除了这些列:${options.excludeColumns}`).setClass('status-button'));
+    if (options.includeColumns.length > 0) children.push(span('含').setAttribute('title', `(-i)包含这些列:${options.includeColumns}`).setClass('status-button'));
+    if (options.excludeColumns.length > 0) children.push(span('除').setAttribute('title', `(-e)除了这些列:${options.excludeColumns}`).setClass('status-button'));
+    if (options.autoHideSameColumns) children.push(span('自').setAttribute('title', `自动隐藏没有差异的列:${options.includeColumns}`).setClass('status-button'));
+
     return span(children)
         .setClass('status-box');
 }

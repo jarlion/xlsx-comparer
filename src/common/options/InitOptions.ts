@@ -1,4 +1,4 @@
-import { isKeyDuplication, pick, str2arr } from "../../utils/dataUtil";
+import { CompareResult, isKeyDuplication, pick, str2arr } from "../../utils/dataUtil";
 import { resolve } from 'path';
 
 export class InitOptions {
@@ -30,12 +30,19 @@ export class InitOptions {
     /** 是否过滤模式 */
     filter: boolean = false;
 
+    /** 版本号 */
+    version: string = '';
+
     parse(params: any): this {
-        const { port, key, source, target, web, head, includeColumns, excludeColumns, filter } = params;
+        const { port, key, source, target, web, head, includeColumns, excludeColumns, filter, autoHideSameColumns, version } = params;
 
         if (!key) throw new Error(`> !!! 请指定用于对确定行数据的字段序号，或列名 ${key}`);
 
+        this.version = version;
+
         this.web = web;
+
+        this.autoHideSameColumns = autoHideSameColumns;
 
         this.key = key;
         this.filter = filter;
@@ -51,10 +58,12 @@ export class InitOptions {
         return this;
     }
 
-    getDisplayColumns(head: any): string[] {
-        // this.includeColumns = this.includeColumns.map()
+    initDisplayColumns(head: any): string[] {
+        let iColumns = this.includeColumns;
         // 如果没有配置包含的列，自动隐藏相同列
-        const iColumns = this.includeColumns.length === 0 ? Object.keys(head) : this.includeColumns;
+        if (this.includeColumns.length === 0) {
+            iColumns = Object.keys(head);
+        }
 
         const columns = new Set([this._getColumnName(head, this.key), ...iColumns]);
 
@@ -69,11 +78,30 @@ export class InitOptions {
         for (const k in head) {
             if (Object.prototype.hasOwnProperty.call(head, k) && head[k] === key) {
                 return k;
-
             }
         }
         throw new Error(`主键错误:${key}`);
         return '';
+    }
+
+    /**
+     * 根据比较结果更新显示列
+     * @param res 比较结果
+     * @returns 
+     */
+    protected _updateDisplayColumns(res: CompareResult): string[] {
+        if (this.autoHideSameColumns) this.displayColumns = ['$rank', this.key, ...res.duplicationProps];
+        return this.displayColumns;
+    }
+
+    filterAndPick(rows: any[], res: CompareResult): any[] {
+        const result: any[] = [];
+        const cols = this._updateDisplayColumns(res);
+        rows.reduce((pre, cur) => {
+            if (!this.filter || !res.isSame(cur[this.key])) pre.push(pick(cur, cols, {}));
+            return pre;
+        }, result);
+        return result;
     }
 
     pickProps(data: any[]): any[] {

@@ -66,8 +66,9 @@ export class CompareResult {
         return this._differentDict[prop] && this._differentDict[prop][index];
     }
 
-    isSame = (key: string) => (item: { [a: string]: string; }): boolean =>
-        !this.same.has(item[key]);
+    isSame(value: string): boolean {
+        return this.same.has(value);
+    }
 
     getLink(targetIndex: number): number {
         return this._links[targetIndex] ?? -1;
