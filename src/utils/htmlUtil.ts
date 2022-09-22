@@ -7,11 +7,11 @@ export function html(title: string = '', lang: string = 'zh-CN'): HTML {
 
 
 
-export function div(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+export function div(children: IHtmlChildren = null, indents: string = ''): IHTMLContainer {
     return new HTMLContainer('div', indents).appendAll(children);
 }
 
-export function span(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+export function span(children: IHtmlChildren = null, indents: string = ''): IHTMLContainer {
     return new HTMLContainer('span', indents).appendAll(children);
 }
 
@@ -20,13 +20,13 @@ export function table(children: IHtmlChildren = null, indents: string = ''): HTM
     table.body().appendAll(children);
     return table;
 }
-export function tr(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+export function tr(children: IHtmlChildren = null, indents: string = ''): IHTMLContainer {
     return new HTMLContainer('tr', indents).appendAll(children);
 }
-export function th(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+export function th(children: IHtmlChildren = null, indents: string = ''): IHTMLContainer {
     return new HTMLContainer('th', indents).appendAll(children);
 }
-export function td(children: IHtmlChildren = null, indents: string = ''): HTMLContainer {
+export function td(children: IHtmlChildren = null, indents: string = ''): IHTMLContainer {
     return new HTMLContainer('td', indents).appendAll(children);
 }
 
@@ -71,7 +71,15 @@ export interface IHTMLElement {
     toString(): string;
 }
 
-export interface IHTMLContainer extends IHTMLElement {
+export interface IHTMLStyleElement {
+    setClass(value: string): this;
+    appendClass(value: string): this;
+
+    setStyle(value: string): this;
+    appendStyle(value: string): this;
+}
+
+export interface IHTMLContainer extends IHTMLElement, IHTMLStyleElement {
 
     /**
      * 获取指定序号的子元素

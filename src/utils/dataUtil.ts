@@ -15,7 +15,8 @@ export function isKeyDuplication<I>(items: I[], key: any): number {
     return -1;
 }
 
-export function compare<I extends Record<string, any>>(source: I[], target: I[], key: string, startIndex: number = 0, props?: string[]): CompareResult {
+export function compare<I extends Record<string, any>>(source: I[], target: I[], key: string, startIndex: number = 0,
+    equalFn: (sourceItem: I, targetItem: I, p: string) => boolean = (s, t, p) => s[p] !== t[p]): CompareResult {
     const result: CompareResult = new CompareResult;
     for (let index = startIndex; index < source.length; index++) {
         let sourceItem = source[index];
@@ -25,13 +26,13 @@ export function compare<I extends Record<string, any>>(source: I[], target: I[],
             result.old(index);
             result.link(targetItemIndex, index);
             const targetItem = target[targetItemIndex];
-            props = props ?? Object.keys(targetItem);
+            const props = Object.keys(targetItem);
             // 是否相同的行
             let same = true;
             props.forEach(p => {
                 // 找到不同属性写入结果
                 // @ts-ignore
-                if (sourceItem[p] !== targetItem[p]) {
+                if (!equalFn(sourceItem, targetItem, p)) {
                     result.diff(p, index);
                     same = false;
                 }
@@ -98,4 +99,13 @@ export class CompareResult {
 export function str2arr(str: string): string[] {
     if (!str) return [];
     return str.split(',').filter(s => s.trim() !== '');
+}
+
+export function pick(object: any, props: string[], target: any): any {
+    for (const key in object) {
+        if (Object.prototype.hasOwnProperty.call(object, key) && props.includes(key)) {
+            target[key] = object[key];
+        }
+    }
+    return target;
 }
