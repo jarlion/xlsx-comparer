@@ -112,7 +112,6 @@ function makeHtml<T>(
             .append(span(options.version).setClass("app-ver"))
             .append(makeStatusBox(options))
             .append(span("相同"))
-            .append(span("新增").setClass("new"))
             .append(span("不同").setClass("diff"))
             .append(span("删除").setClass("del"))
         )

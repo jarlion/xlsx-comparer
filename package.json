@@ -1,11 +1,11 @@
 {
   "name": "xlxs-comparer",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "xlxs compare tool",
   "main": "./bin/server/index.js",
   "scripts": {
     "tsc-w": "tsc -w",
-    "xc": "node ./bin/server/index.js xc -h 2 -w -f -s test/a.xlsx -t test/b.xlsx -k A -i B,C",
+    "xc": "node ./bin/server/index.js xc -h 1 -w -f -s test/a.xlsx -t test/b.xlsx -k A -i B,C",
     "help": "node ./bin/server/index.js xc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
