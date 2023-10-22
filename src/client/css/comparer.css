@@ -39,14 +39,6 @@
     background-color: #FFC7CE;
 }
 
-.main .new {
-    background-color: #C6EFCE;
-}
-
-.main .del {
-    background-color: #DDDDDD;
-}
-
 .main .status-button {
     cursor: default;
     width: 32px;

@@ -113,7 +113,6 @@ function makeHtml<T>(
             .append(makeStatusBox(options))
             .append(span("相同"))
             .append(span("不同").setClass("diff"))
-            .append(span("删除").setClass("del"))
         )
         // 对比表格
         .append(
