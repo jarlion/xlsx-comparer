@@ -158,6 +158,23 @@ function getDiffStyle<T extends Record<string, string>>(
 
 type ColumnValue = string | ((row: any) => string);
 
+class TableHeader {
+  protected _dict: Record<string, string> = {};
+
+  set(col: string, val: string, separator = "/"): this {
+    if (!this._dict[col]) {
+      this._dict[col] = val;
+    } else {
+      this._dict[col] += `${separator}${val}`;
+    }
+    return this;
+  }
+
+  get(col: string): string {
+    return this._dict[col] ?? "";
+  }
+}
+
 /**
  * 创建显示结果的表格
  * @param data 表格内容数据
@@ -181,6 +198,7 @@ function makeTableWithResult<T>(
 
   // 添加表头
   const tableHeadRows: IHTMLContainer[] = [];
+  const header = new TableHeader();
   const cols = options.displayColumns;
   for (let rowIndex = 0; rowIndex < rowsHead; rowIndex++) {
     const headRowData = data[rowIndex].values[tableIndex] as Record<
@@ -194,6 +212,7 @@ function makeTableWithResult<T>(
         cell.toString(),
         true
       );
+      header.set(col, cell.toString());
       if (col === key) tableHeader.appendClass("key");
       if (!tableHeadRows[rowIndex]) tableHeadRows[rowIndex] = tr();
       // 判断是否合并行 TODO
@@ -212,6 +231,10 @@ function makeTableWithResult<T>(
   ind.reduce();
   for (let i = rowsHead; i < data.length; i++) {
     const res = data[i];
+
+    // 不显示相同的行
+    if (options.filter && !res.diff) continue;
+
     const rowData: Record<string, string> =
       res.values[tableIndex] ?? ({} as Record<string, string>);
     let row: IHTMLElement[] = [];
@@ -233,7 +256,11 @@ function makeTableWithResult<T>(
         td(cell.toString())
           .appendClass(cls ?? "")
           .appendClass(prop === key ? "key" : "")
-          .setAttribute("title", cell.toString(), true)
+          .setAttribute(
+            "title",
+            `${cell.toString()} 【${header.get(prop)}】`,
+            true
+          )
       );
     }
     tbody.push(tr(row, ind.add().toString()));

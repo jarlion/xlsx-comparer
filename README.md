@@ -29,6 +29,15 @@ node ./bin/server/index.js xc -s test/a.xlsx -t test/b.xlsx -k A
 
 # 更新日志
 
+## 0.0.12
+
+- -f 过滤不显示相同行
+- title 显示列头
+
+## 0.0.11
+
+- 不同单元格标红+下划线
+
 ## 0.0.10
 
 - 修改对比方法支持多表对比
