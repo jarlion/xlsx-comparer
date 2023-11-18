@@ -1,8 +1,9 @@
+import { ICompareResult } from "./../utils/dataUtil";
 /**
  * 主程序
  */
 import { InitOptions } from "../common/options/InitOptions";
-import { Comparator, ICompareResult } from "../utils/dataUtil";
+import { Comparator } from "../utils/dataUtil";
 import {
   HTML,
   IHTMLContainer,
@@ -52,7 +53,8 @@ export function init(params: any) {
   const cmp = new Comparator((item: any) => item[key]);
   // 对比表格差异
   const res = cmp.compare(
-    (item: any) => includeColumns.reduce((res, cur) => res + item[cur], ""),
+    (item: any) =>
+      includeColumns.reduce((res, cur) => `${res}|${item[cur]}`, ""),
     sourceRows,
     targetRows
   );
@@ -95,7 +97,7 @@ function initWebDir(dir: string): string {
  * @param key 表格主键
  * @returns
  */
-function makeHtml<T>(
+function makeHtml<T extends Record<string, string>>(
   compareResult: ICompareResult<T>[],
   options: InitOptions
 ): HTML {
@@ -121,21 +123,37 @@ function makeHtml<T>(
             .append(
               div([
                 div(options.sourcePath).appendClass("file-path"),
-                makeTableWithResult(compareResult, 0, options, (row) =>
-                  row?.diff ? "diff" : ""
-                ),
+                makeTableWithResult(compareResult, 0, options, getDiffStyle),
               ])
             )
             .append(
               div([
                 div(options.targetPath).appendClass("file-path"),
-                makeTableWithResult(compareResult, 1, options, (row) =>
-                  row?.diff ? "diff" : ""
-                ),
+                makeTableWithResult(compareResult, 1, options, getDiffStyle),
               ])
             )
         )
     );
+}
+
+/**
+ * 获取不同项的样式
+ */
+function getDiffStyle<T extends Record<string, string>>(
+  res: ICompareResult<T>,
+  prop?: string
+): string {
+  const { diff, values } = res;
+  if (!diff) return "";
+  if (prop === undefined) return "diff";
+
+  let v: string | null = null;
+  for (let val of values) {
+    if (val === undefined) continue;
+    if (v === null) v = val[prop];
+    if (val[prop] !== v) return "diff red";
+  }
+  return "diff";
 }
 
 type ColumnValue = string | ((row: any) => string);
@@ -153,7 +171,7 @@ function makeTableWithResult<T>(
   data: ICompareResult<T>[],
   tableIndex: number,
   options: InitOptions,
-  eachFn: (row: ICompareResult<T>) => string,
+  eachFn: (row: ICompareResult<T>, prop?: string) => string,
   indents: string = ""
 ): IHTMLContainer {
   const { key, head } = options;
@@ -208,7 +226,7 @@ function makeTableWithResult<T>(
     for (let j = 1; j < cols.length; j++) {
       prop = cols[j];
       // 获取指定单元格样式
-      cls = eachFn && eachFn(res);
+      cls = eachFn && eachFn(res, prop);
       const cell = rowData[prop] ?? "";
 
       row.push(

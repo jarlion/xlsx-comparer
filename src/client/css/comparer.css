@@ -1,64 +1,71 @@
 .pane {
-    display: flex;
+  display: flex;
 }
 
-.pane>* {
-    flex-grow: 1;
+.pane > * {
+  flex-grow: 1;
 }
 
 .pane table {
-    border-collapse: collapse;
-    color: rgb(96, 98, 102);
-    width: 100%;
+  border-collapse: collapse;
+  color: rgb(96, 98, 102);
+  width: 100%;
 }
 
 .pane table .key {
-    font-weight: bold;
-    max-width: 180px;
-    color: #2F75B5;
+  font-weight: bold;
+  max-width: 180px;
+  color: #2f75b5;
 }
 
 .pane table th {
-    border: 1px solid #BBBBBB;
-    background-color: #EDEDED;
-    color: #444;
+  border: 1px solid #bbbbbb;
+  background-color: #ededed;
+  color: #444;
 }
 
 .pane table td {
-    padding: 2px 5px;
-    border: 1px solid #BBBBBB;
+  padding: 2px 5px;
+  border: 1px solid #bbbbbb;
 }
 
 .main .rank {
-    background-color: #EDEDED;
-    width: 40px;
-    text-align: center;
+  background-color: #ededed;
+  width: 40px;
+  text-align: center;
 }
 
 .main .diff {
-    background-color: #FFC7CE;
+  background-color: #ffc7ce;
 }
 
 .main .status-button {
-    cursor: default;
-    width: 32px;
-    height: 32px;
-    /* border: #333333 solid 1px; */
-    background-color: #333333;
-    color: #FFFFFF;
+  cursor: default;
+  width: 32px;
+  height: 32px;
+  /* border: #333333 solid 1px; */
+  background-color: #333333;
+  color: #ffffff;
 }
 
 td,
 th {
-    text-overflow: ellipsis;
-    overflow: hidden;
-    white-space: nowrap;
-    height: 25px;
-    max-width: 80px;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+  height: 25px;
+  max-width: 80px;
 }
 
 .file-path {
-    border: #BBBBBB solid 1px;
-    padding: 2px 5px;
-    margin: 2px 1px;
+  border: #bbbbbb solid 1px;
+  padding: 2px 5px;
+  margin: 2px 1px;
+}
+
+.red {
+  color: red;
+}
+.pane table td.red {
+  border-bottom: red solid 1px;
 }

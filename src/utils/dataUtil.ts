@@ -49,23 +49,24 @@ export class Comparator<T> {
   /**
    * 比较数据
    * @param calcValue 计算对比值
-   * @param arr 需要对比的数据数据
+   * @param tables 需要对比的数据数据
    * @returns 对比结果
    */
-  compare(calcValue: (item: T) => any, ...arr: T[][]): ICompareResult<T>[] {
+  compare(calcValue: (item: T) => any, ...tables: T[][]): ICompareResult<T>[] {
     let result: ICompareResult<T>[] = [];
     const dict: Record<string, ICompareResult<T>> = {};
-    const len = arr.length;
-    for (let col = 0; col < len; col++) {
-      for (let row = 0; row < arr[col].length; row++) {
-        const item = arr[col][row];
+    const len = tables.length;
+    for (let tableIndex = 0; tableIndex < len; tableIndex++) {
+      for (let row = 0; row < tables[tableIndex].length; row++) {
+        const table = tables[tableIndex];
+        const item = table[row];
         const key = this.getKey(item);
         if (!dict[key]) {
           const values: T[] = [];
-          values[col] = item;
+          values[tableIndex] = item;
           dict[key] = {
             key,
-            index: row * len + col,
+            index: row * len + tableIndex,
             cmpVal: calcValue(item),
             diff: true,
             values,
@@ -73,7 +74,7 @@ export class Comparator<T> {
           result.push(dict[key]);
         } else {
           dict[key].diff &&= dict[key].cmpVal !== calcValue(item);
-          dict[key].values[col] = item;
+          dict[key].values[tableIndex] = item;
         }
       }
     }
