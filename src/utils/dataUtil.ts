@@ -57,24 +57,24 @@ export class Comparator<T> {
     const dict: Record<string, ICompareResult<T>> = {};
     const len = tables.length;
     for (let tableIndex = 0; tableIndex < len; tableIndex++) {
-      for (let row = 0; row < tables[tableIndex].length; row++) {
-        const table = tables[tableIndex];
-        const item = table[row];
-        const key = this.getKey(item);
+      const table = tables[tableIndex];
+      for (let rowIndex = 0; rowIndex < tables[tableIndex].length; rowIndex++) {
+        const row = table[rowIndex];
+        const key = this.getKey(row);
         if (!dict[key]) {
           const values: T[] = [];
-          values[tableIndex] = item;
+          values[tableIndex] = row;
           dict[key] = {
             key,
-            index: row * len + tableIndex,
-            cmpVal: calcValue(item),
+            index: rowIndex * len + tableIndex,
+            cmpVal: calcValue(row),
             diff: true,
             values,
           };
           result.push(dict[key]);
         } else {
-          dict[key].diff &&= dict[key].cmpVal !== calcValue(item);
-          dict[key].values[tableIndex] = item;
+          dict[key].diff &&= dict[key].cmpVal !== calcValue(row);
+          dict[key].values[tableIndex] = row;
         }
       }
     }

@@ -258,7 +258,7 @@ function makeTableWithResult<T>(
           .appendClass(prop === key ? "key" : "")
           .setAttribute(
             "title",
-            `${cell.toString()} 【${header.get(prop)}】`,
+            `${cell.toString()} 【列】${header.get(prop)}【行】${rank}`,
             true
           )
       );

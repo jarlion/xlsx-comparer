@@ -29,6 +29,10 @@ node ./bin/server/index.js xc -s test/a.xlsx -t test/b.xlsx -k A
 
 # 更新日志
 
+## 0.0.13
+
+- 单元格添加行显示
+
 ## 0.0.12
 
 - -f 过滤不显示相同行
