@@ -59,6 +59,73 @@ export function link(
 }
 
 /**
+ * 标签
+ * @param content 标签内容
+ * @param forId 绑定的元素 id
+ * @param indents 缩进
+ * @returns
+ */
+export function label(content: string, forId: string, indents: string = "") {
+  return new HTMLBaseElement("label", indents, content).setAttribute(
+    "for",
+    forId
+  );
+}
+
+interface IInputOptions {
+  accept?: string;
+  value?: string; // checkbox
+  id?: string;
+  labelContent?: string;
+  multiple?: boolean;
+  name?: string; // file
+  size?: number; // file
+  type?:
+    | "button"
+    | "date"
+    | "datetime"
+    | "datetime-local"
+    | "email"
+    | "file"
+    | "hidden"
+    | "image"
+    | "month"
+    | "number"
+    | "password"
+    | "radio"
+    | "range"
+    | "reset"
+    | "search"
+    | "submit"
+    | "tel"
+    | "text"
+    | "time"
+    | "url"
+    | "week";
+}
+export function input(
+  {
+    accept,
+    labelContent = "",
+    id = "",
+    multiple,
+    type = "text",
+  }: IInputOptions,
+  indents: string = ""
+) {
+  let children = [];
+  const eleId = id ?? `${labelContent}_btn`;
+  if (labelContent) children.push(label(labelContent, eleId));
+  const btn = new HTMLBaseElement("input", indents)
+    .setAttribute("accept", accept)
+    .setAttribute("id", eleId)
+    .setAttribute("type", type)
+    .toggleAttribute("multiple", multiple);
+  children.push(btn);
+  return new HTMLContainer("div", indents).appendAll(children);
+}
+
+/**
  * 缩进
  */
 export class Indent {
@@ -155,11 +222,39 @@ export class HTMLBaseElement implements IHTMLElement {
 
   protected _attributes: Record<string, string> = {};
 
-  constructor(public tag: string, public indents: string = "") {}
+  constructor(
+    public tag: string,
+    public indents: string = "",
+    protected _content: string = ""
+  ) {}
 
-  setAttribute(name: string, value: string, encode: boolean = false): this {
-    const val = String(value).trim() ?? "";
-    this._attributes[name] = encode ? encodeHtml(val) : val;
+  /**
+   * 设置属性
+   * @param name 属性名称
+   * @param value 属性值
+   * @param encode 是否编码
+   * @returns
+   */
+  setAttribute(name: string, value?: string, encode: boolean = false): this {
+    if (value !== undefined) {
+      const val = String(value).trim() ?? "";
+      this._attributes[name] = encode ? encodeHtml(val) : val;
+    }
+    return this;
+  }
+
+  /**
+   * 切换属性
+   * @param name
+   * @param enable
+   * @returns
+   */
+  toggleAttribute(name: string, enable?: boolean): this {
+    if (enable) {
+      this._attributes[name] = "";
+    } else {
+      delete this._attributes[name];
+    }
     return this;
   }
   appendAttribute(name: string, value: string, encode: boolean = false): this {
@@ -215,7 +310,7 @@ export class HTMLBaseElement implements IHTMLElement {
   }
 
   protected _formContent(): string {
-    return "";
+    return this._content;
   }
 }
 

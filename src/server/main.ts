@@ -11,6 +11,7 @@ import {
   Indent,
   div,
   html,
+  input,
   link,
   span,
   table,
@@ -115,6 +116,13 @@ function makeHtml<T extends Record<string, string>>(
             .append(makeStatusBox(options))
             .append(span("相同"))
             .append(span("不同").setClass("diff"))
+            .append(
+              input({
+                labelContent: "对比文件(*.xlsx)",
+                type: "file",
+                accept: ".xlsx",
+              })
+            )
         )
         // 对比表格
         .append(

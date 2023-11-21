@@ -29,6 +29,11 @@ node ./bin/server/index.js xc -s test/a.xlsx -t test/b.xlsx -k A
 
 # 更新日志
 
+## 0.0.14
+
+- label
+- input
+
 ## 0.0.13
 
 - 单元格添加行显示
